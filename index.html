@@ -1,1 +1,2314 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Ejecutivo de Cierre de Proyecto | MTI Selling & Alldora</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter (Corporativo/Limpio) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // Paleta Oficial MTI Selling
+                        mti: {
+                            teal: '#1FA6A8',   // Principal (Títulos, Íconos)
+                            orange: '#F05A28', // Acento (Llamados, Métricas)
+                            dark: '#2B2B2B',   // Texto Principal
+                            bg: '#F4F6F8',     // Fondos Suaves
+                            light: '#E8F6F6',  // Fondo muy claro teal
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #2B2B2B;
+        }
+        /* Ajuste para que el menú fijo no tape los títulos al navegar */
+        section {
+            scroll-margin-top: 100px;
+        }
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        /* Efecto Hover */
+        .nav-link:hover {
+            color: #1FA6A8;
+        }
+        /* Línea inferior animada */
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #1FA6A8;
+            transition: width 0.3s;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        /* Estado Activo (Controlado por JS) */
+        .nav-link.active {
+            color: #1FA6A8;
+            font-weight: 700;
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* Utilidad para las barras del gráfico */
+        .bar-anim {
+            animation: growBar 1s ease-out forwards;
+            transform-origin: bottom;
+        }
+        @keyframes growBar {
+            from { transform: scaleY(0); }
+            to { transform: scaleY(1); }
+        }
+
+        /* Conectores visuales para el flujo de llamadas */
+        .flow-line {
+            position: absolute;
+            z-index: 0;
+            opacity: 0.2;
+        }
+
+        /* ========================================= */
+        /* ESTILOS PARA IMPRESIÓN / PDF              */
+        /* ========================================= */
+        @media print {
+            /* Ocultar elementos de navegación y UI */
+            header, #download-btn, #tab-controls, footer {
+                display: none !important;
+            }
+            
+            /* Ajustar fondo y márgenes */
+            body {
+                background-color: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .pt-28 {
+                padding-top: 20px !important;
+            }
+            .bg-slate-50, .bg-slate-900 {
+                background-color: white !important;
+                color: black !important;
+            }
+            .text-white {
+                color: black !important;
+            }
+            .bg-white\/5, .bg-white\/10 {
+                border: 1px solid #ccc !important;
+            }
+            
+            /* Asegurar que el contenido fluya */
+            section {
+                page-break-inside: avoid;
+                margin-bottom: 40px !important;
+                box-shadow: none !important;
+                border: 1px solid #eee !important;
+            }
+
+            /* Forzar apertura de acordeones en impresión */
+            .accordion-content {
+                display: block !important;
+                max-height: none !important;
+                opacity: 1 !important;
+                overflow: visible !important;
+            }
+            .accordion-icon {
+                display: none !important;
+            }
+        }
+        
+        /* Transiciones suaves para acordeón */
+        .accordion-content {
+            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+        .accordion-content.open {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 antialiased">
+
+    <!-- MENÚ SUPERIOR FIJO -->
+    <header class="fixed top-0 w-full bg-white shadow-sm z-50 border-b border-gray-100 print:hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Título del reporte en menú (visible en scroll) -->
+                <div class="flex-shrink-0 text-mti-dark font-bold text-lg tracking-tight flex items-center gap-4">
+                    Reporte de Cierre
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <!-- Navegación Desktop -->
+                    <nav class="hidden md:flex space-x-6 lg:space-x-8 text-sm font-medium text-gray-500" id="main-nav">
+                        <!-- Clases iniciales dinámicas vía JS, pero dejamos el primero marcado por defecto -->
+                        <a href="#objetivo" class="nav-link active">Objetivo y alcance</a>
+                        <a href="#icp" class="nav-link">ICP</a>
+                        <a href="#perfiles" class="nav-link">Perfiles</a>
+                        <a href="#timeline" class="nav-link">Timeline</a>
+                        <a href="#campanas" class="nav-link">Campañas</a>
+                        <a href="#etapa2" class="nav-link">2da Etapa</a>
+                    </nav>
+
+                    <!-- BOTÓN DESCARGAR PDF (Fixed JS Event) -->
+                    <button id="download-btn" class="hidden md:flex items-center gap-2 bg-mti-teal text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-teal-600 transition-colors shadow-sm cursor-pointer select-none">
+                        <i class="fa-solid fa-file-pdf"></i> Descargar
+                    </button>
+                </div>
+                
+                <!-- Mobile Menu Button (Icon only for structure) -->
+                <div class="md:hidden text-mti-dark">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO / LOGOS -->
+    <div class="pt-28 pb-6 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- BARRA DE LOGOS (FONDO NEGRO) -->
+            <div class="bg-slate-900 rounded-xl p-6 shadow-lg mb-8">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12">
+                    
+                    <!-- Logo MTI -->
+                    <div class="w-48 h-16 flex items-center justify-center">
+                        <img src="mti-logo.png" alt="MTI Selling" class="max-h-full max-w-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                        <span class="hidden text-gray-500 text-xs">[mti-logo.png]</span>
+                    </div>
+
+                    <!-- Línea conectora visual (Ajustada a oscuro) -->
+                    <div class="hidden md:block h-px flex-grow bg-gray-700 mx-4"></div>
+
+                    <!-- Logo Alldora -->
+                    <div class="w-48 h-16 flex items-center justify-center">
+                        <img src="Logo Alldora.png" alt="Alldora" class="max-h-full max-w-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                        <span class="hidden text-gray-500 text-xs">[Logo Alldora.png]</span>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <h2 class="text-2xl md:text-3xl font-light text-mti-dark">Presentación de Resultados y Próximos Pasos</h2>
+                <div class="mt-3 w-12 h-1 bg-mti-orange mx-auto rounded-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-16">
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 1: OBJETIVO Y ALCANCE -->
+        <!-- ========================================== -->
+        <section id="objetivo" class="animate-fade-in bg-white rounded-3xl shadow-lg border border-gray-100 p-6 md:p-10 relative overflow-hidden">
+            
+            <!-- Acento visual superior -->
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-mti-teal to-teal-600"></div>
+
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-full bg-mti-teal flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-bullseye text-lg"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-mti-dark">Objetivo y Alcance</h2>
+            </div>
+
+            <!-- BLOQUE 1: KPIs Principales (Objetivo vs Realidad) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+                
+                <!-- Card 1: Objetivo & Tiempo -->
+                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 relative overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-gray-100 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider relative z-10">Meta del Proyecto</h3>
+                        <div class="mt-2 mb-3 flex items-end gap-2 relative z-10">
+                            <span class="text-5xl font-bold text-mti-dark">70</span>
+                            <span class="text-lg text-gray-500 mb-1">IQLs</span>
+                        </div>
+                        
+                        <!-- Duración Oficial -->
+                        <div class="relative z-10 flex items-center text-sm font-medium text-gray-600 bg-white/50 w-fit px-2 py-1 rounded border border-gray-200">
+                             <i class="fa-regular fa-calendar mr-2 text-mti-teal"></i>
+                             Duración: 6 Meses
+                        </div>
+                    </div>
+                    
+                    <!-- Nota de Ejecución Real -->
+                    <div class="mt-5 pt-4 border-t border-dashed border-gray-300 relative z-10">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-white p-1.5 rounded-md border border-gray-200 shadow-sm mt-0.5">
+                                <i class="fa-solid fa-clock-rotate-left text-mti-orange text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 uppercase mb-0.5">Ejecución Operativa Real</p>
+                                <p class="text-xl font-bold text-mti-dark leading-none mb-1">5 Meses</p>
+                                <p class="text-[11px] text-gray-400 leading-tight">Diciembre afectado por estacionalidad de mercado.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Resultados (Barra Progreso) -->
+                <div class="bg-gray-50 p-6 rounded-xl border-l-4 border-l-mti-teal border-y border-r border-gray-200 col-span-1 lg:col-span-2 hover:shadow-md transition-shadow">
+                    <div class="flex flex-col h-full justify-between">
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <h3 class="text-lg font-bold text-mti-dark">Cumplimiento de Generación de IQLs</h3>
+                                <span class="text-2xl font-bold text-mti-teal">70%</span>
+                            </div>
+                            <!-- Barra de Progreso -->
+                            <div class="w-full bg-gray-200 rounded-full h-4 mb-2 overflow-hidden">
+                                <div class="bg-gradient-to-r from-teal-400 to-mti-teal h-4 rounded-full relative shadow-lg" style="width: 70%;">
+                                    <div class="absolute right-0 -top-1 w-3 h-6 bg-white opacity-20 rotate-12"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-500 mt-1">
+                                <span>Logrado: <strong>49</strong> IQLs</span>
+                                <span>Objetivo: <strong>70</strong> IQLs</span>
+                            </div>
+                        </div>
+
+                        <!-- Dato Referencial -->
+                        <div class="mt-6 pt-4 border-t border-gray-200 flex items-center gap-4">
+                            <div class="bg-white text-mti-orange p-3 rounded-lg border border-gray-200 shadow-sm">
+                                <i class="fa-solid fa-handshake text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-mti-dark">8 <span class="text-sm font-normal text-gray-500">Reuniones generadas</span></p>
+                                <p class="text-xs text-gray-400 italic">Conversión referencial ~16% (Fuera del alcance del proyecto)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 2: Gráfico Visual Mensual + Base de Datos -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+                
+                <!-- Gráfico de Barras Mensual -->
+                <div class="lg:col-span-7 bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-6 relative z-20">
+                        <h3 class="text-lg font-bold text-mti-dark">Generación de IQLs por Servicio</h3>
+                        <div class="flex gap-2">
+                             <div class="flex items-center gap-1 text-[10px] font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded border border-gray-100">
+                                <div class="w-2 h-0.5 bg-gray-400"></div> Promedio: 9.6
+                             </div>
+                             <div class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">Total: 49</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenedor del gráfico -->
+                    <div class="flex-grow relative h-64 w-full border-b border-gray-100">
+                        
+                        <!-- CAPA SVG PARA LÍNEAS (SOLO PROMEDIO) -->
+                        <svg class="absolute inset-0 w-full h-full z-10 pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
+                            <!-- Línea de Promedio (9.6 sobre escala de 14 max = ~68% altura => Y=31.4%) -->
+                            <line x1="0" y1="31.4" x2="100" y2="31.4" stroke="#9ca3af" stroke-width="0.3" stroke-dasharray="2, 2" />
+                        </svg>
+
+                        <!-- COLUMNAS (HTML) -->
+                        <div class="absolute inset-0 z-20 flex items-end justify-between px-2 gap-2 sm:gap-4 pb-0">
+                            
+                            <!-- Mes: Jul (0) -->
+                            <div class="flex flex-col items-center flex-1 h-full justify-end group">
+                                <div class="text-xs font-bold text-gray-300 mb-1">0</div>
+                                <div class="w-full bg-gray-100 rounded-t-sm h-[2px]" title="Julio: 0 (Setup)"></div> <!-- Mínima altura visual -->
+                                <div class="mt-3 text-xs text-gray-400 font-medium">Jul</div>
+                            </div>
+
+                            <!-- Mes: Ago -->
+                            <div class="flex flex-col items-center flex-1 h-full justify-end group">
+                                <div class="text-xs font-bold text-mti-dark mb-1">11</div>
+                                <div class="w-full bg-mti-teal rounded-t-sm bar-anim shadow-sm group-hover:bg-teal-500 transition-colors" style="height: 78.5%;"></div>
+                                <div class="mt-3 text-xs text-gray-500 font-medium">Ago</div>
+                            </div>
+
+                            <!-- Mes: Sept -->
+                            <div class="flex flex-col items-center flex-1 h-full justify-end group">
+                                <div class="text-xs font-bold text-mti-dark mb-1">11</div>
+                                <div class="w-full bg-mti-teal rounded-t-sm bar-anim shadow-sm group-hover:bg-teal-500 transition-colors" style="height: 78.5%;"></div>
+                                <div class="mt-3 text-xs text-gray-500 font-medium">Sept</div>
+                            </div>
+
+                            <!-- Mes: Oct -->
+                            <div class="flex flex-col items-center flex-1 h-full justify-end group">
+                                <div class="text-xs font-bold text-mti-dark mb-1">7</div>
+                                <div class="w-full bg-mti-teal rounded-t-sm bar-anim shadow-sm group-hover:bg-teal-500 transition-colors" style="height: 50%;"></div>
+                                <div class="mt-3 text-xs text-gray-500 font-medium">Oct</div>
+                            </div>
+
+                            <!-- Mes: Nov (STACKED) -->
+                            <div class="flex flex-col items-center flex-1 h-full justify-end group">
+                                <div class="text-xs font-bold text-mti-dark mb-1">12</div>
+                                <!-- Stack Container (Total 12/14 = 85.7%) -->
+                                <div class="w-full flex flex-col justify-end h-[85.7%] rounded-t-sm overflow-hidden shadow-sm">
+                                    <!-- RPA (Top 6) -->
+                                    <div class="bg-mti-orange w-full bar-anim flex items-center justify-center text-[10px] text-white font-bold opacity-90 group-hover:opacity-100" style="height: 50%;">6</div>
+                                    <!-- Impresión (Bottom 6) -->
+                                    <div class="bg-mti-teal w-full bar-anim flex items-center justify-center text-[10px] text-white font-bold opacity-90 group-hover:opacity-100" style="height: 50%;">6</div>
+                                </div>
+                                <div class="mt-3 text-xs text-gray-500 font-medium">Nov</div>
+                            </div>
+
+                            <!-- Mes: Dic (STACKED) -->
+                            <div class="flex flex-col items-center flex-1 h-full justify-end group">
+                                <div class="text-xs font-bold text-mti-dark mb-1">7</div>
+                                <!-- Stack Container (Total 7/14 = 50%) -->
+                                <div class="w-full flex flex-col justify-end h-[50%] rounded-t-sm overflow-hidden shadow-sm">
+                                    <!-- RPA (Top 4) -->
+                                    <div class="bg-mti-orange w-full bar-anim flex items-center justify-center text-[10px] text-white font-bold opacity-90 group-hover:opacity-100" style="height: 57%;">4</div>
+                                    <!-- Impresión (Bottom 3) -->
+                                    <div class="bg-mti-teal w-full bar-anim flex items-center justify-center text-[10px] text-white font-bold opacity-90 group-hover:opacity-100" style="height: 43%;">3</div>
+                                </div>
+                                <div class="mt-3 text-xs text-gray-500 font-medium">Dic</div>
+                            </div>
+
+                            <!-- Mes: Ene -->
+                            <div class="flex flex-col items-center flex-1 h-full justify-end group">
+                                <div class="text-xs font-bold text-mti-dark mb-1">1</div>
+                                <div class="w-full bg-mti-teal rounded-t-sm bar-anim shadow-sm group-hover:bg-teal-500 transition-colors" style="height: 7.1%;"></div>
+                                <div class="mt-3 text-xs text-gray-500 font-medium">Ene</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Leyenda + Info Tendencia -->
+                    <div class="flex flex-wrap justify-between items-center mt-6 gap-4">
+                        <div class="flex justify-center gap-6">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-mti-teal rounded-sm"></div>
+                                <span class="text-xs text-gray-500">Serv. Impresión</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-mti-orange rounded-sm"></div>
+                                <span class="text-xs text-gray-500">RPA (Desde Nov)</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-400">
+                             <div class="w-4 h-0.5 bg-gray-400 border-t border-b border-gray-400"></div> <!-- Icono visual de dashed line -->
+                             <span>Promedio Mensual (9.6)</span>
+                        </div>
+                    </div>
+
+                    <!-- NUEVO BLOQUE: OPORTUNIDAD PROYECTADA (ACTUALIZADO) -->
+                    <div class="mt-5 bg-gradient-to-r from-orange-50 to-white p-4 rounded-lg border-l-4 border-l-mti-orange border-y border-r border-orange-100 flex gap-3 relative overflow-hidden shadow-sm">
+                        <!-- Decoración de fondo -->
+                        <div class="absolute right-0 top-0 w-24 h-24 bg-orange-100 rounded-bl-full -mr-10 -mt-10 opacity-30"></div>
+                        
+                        <div class="flex-shrink-0 mt-0.5">
+                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-mti-orange shadow-sm border border-orange-100">
+                                <i class="fa-solid fa-chart-line text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="relative z-10">
+                            <h4 class="text-xs font-bold text-mti-orange uppercase tracking-wide mb-1">Oportunidad Proyectada (Impresión)</h4>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                Considerando el histórico de 1 perfil (~9-10 IQLs/mes), una operación sostenida con <strong class="text-gray-900">2 perfiles dedicados</strong> exclusivamente a Impresión proyecta una capacidad de <strong class="text-gray-900">15 a 18 IQLs mensuales</strong> (~45-54 IQLs por trimestre), sin fase de setup adicional.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Base de Datos (Highlight Sobrecumplimiento REDISEÑADO) -->
+                <div class="lg:col-span-5 flex flex-col gap-6">
+                    <div class="bg-gradient-to-br from-gray-900 to-mti-dark text-white p-8 rounded-xl shadow-lg flex-grow flex flex-col relative overflow-hidden group border border-gray-700">
+                        
+                        <!-- Decorative bg elements -->
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-[0.03] rounded-bl-full pointer-events-none"></div>
+                        <i class="fa-solid fa-database absolute -right-8 -bottom-8 text-[11rem] text-white opacity-[0.04] group-hover:opacity-[0.07] transition-opacity duration-500"></i>
+                        
+                        <!-- Header -->
+                        <div class="flex justify-between items-start mb-8 relative z-10">
+                            <h3 class="text-mti-teal font-bold uppercase tracking-widest text-sm bg-white/5 px-3 py-1 rounded border border-white/10">BASE DE DATOS</h3>
+                        </div>
+                        
+                        <!-- Big Numbers Comparison -->
+                        <div class="flex flex-col mb-8 relative z-10">
+                            <div class="flex justify-between items-end border-b border-gray-700 pb-6 mb-6">
+                                <div>
+                                    <span class="block text-gray-400 text-xs font-medium uppercase tracking-wider mb-2">Objetivo Inicial</span>
+                                    <span class="text-3xl font-bold text-gray-500">1.600</span>
+                                </div>
+                                <div class="text-right flex flex-col items-end">
+                                    <!-- Badge Animado -->
+                                    <div class="mb-2 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-[0_0_15px_rgba(34,197,94,0.4)] animate-pulse flex items-center gap-2">
+                                        <i class="fa-solid fa-check-double"></i> +49% SOBRECUMPLIMIENTO
+                                    </div>
+                                    <span class="text-6xl font-bold text-white tracking-tighter leading-none">2.398</span>
+                                    <span class="text-sm text-mti-teal font-medium mt-1">Contactos Entregados</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quality Metrics Grid (Filling space) -->
+                        <div class="space-y-3 relative z-10">
+                            <!-- Correos -->
+                            <div class="bg-white/5 p-3 rounded-lg border border-white/10 flex items-center justify-between hover:bg-white/10 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-mti-teal/20 flex items-center justify-center text-mti-teal">
+                                        <i class="fa-regular fa-envelope"></i>
+                                    </div>
+                                    <span class="text-gray-300 text-sm font-medium">Correos Válidos</span>
+                                </div>
+                                <span class="font-bold text-xl text-white">2.266</span>
+                            </div>
+                            
+                            <!-- Teléfonos -->
+                            <div class="bg-white/5 p-3 rounded-lg border border-white/10 flex items-center justify-between hover:bg-white/10 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-mti-orange/20 flex items-center justify-center text-mti-orange">
+                                        <i class="fa-solid fa-phone"></i>
+                                    </div>
+                                    <span class="text-gray-300 text-sm font-medium">Teléfonos</span>
+                                </div>
+                                <span class="font-bold text-xl text-white">1.220</span>
+                            </div>
+                            
+                            <!-- Empresas -->
+                            <div class="bg-white/5 p-3 rounded-lg border border-white/10 flex items-center justify-between hover:bg-white/10 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded bg-blue-500/20 flex items-center justify-center text-blue-400">
+                                        <i class="fa-regular fa-building"></i>
+                                    </div>
+                                    <span class="text-gray-300 text-sm font-medium">Empresas</span>
+                                </div>
+                                <span class="font-bold text-xl text-white">791</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 3: Alcance y Estructura -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                
+                <!-- Alcance del Proyecto -->
+                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                    <h3 class="font-bold text-mti-dark mb-4 border-b border-gray-300 pb-2">Alcance del Servicio</h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Incluido -->
+                        <div>
+                            <p class="text-xs font-bold text-mti-teal uppercase mb-2">Incluido</p>
+                            <ul class="space-y-2">
+                                <li class="flex items-start gap-2 text-sm text-gray-600">
+                                    <i class="fa-solid fa-check text-mti-teal mt-1"></i>
+                                    Servicios de Impresión (Desde inicio)
+                                </li>
+                                <li class="flex items-start gap-2 text-sm text-gray-600">
+                                    <i class="fa-solid fa-check text-mti-teal mt-1"></i>
+                                    RPA (Desde noviembre)
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- No Incluido -->
+                        <div class="pt-2">
+                            <p class="text-xs font-bold text-gray-400 uppercase mb-2">No incluido (Out of scope)</p>
+                            <ul class="space-y-2">
+                                <li class="flex items-start gap-2 text-sm text-gray-400">
+                                    <i class="fa-solid fa-xmark text-gray-300 mt-1"></i>
+                                    Posicionamiento orgánico
+                                </li>
+                                <li class="flex items-start gap-2 text-sm text-gray-400">
+                                    <i class="fa-solid fa-xmark text-gray-300 mt-1"></i>
+                                    Posteos alineados a ICP
+                                </li>
+                                <li class="flex items-start gap-2 text-sm text-gray-400">
+                                    <i class="fa-solid fa-xmark text-gray-300 mt-1"></i>
+                                    Actividades calendario MaaS
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estructura y Canales -->
+                <div class="space-y-6">
+                    <!-- Canales -->
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-500 uppercase mb-3">Canales Activos</h3>
+                        <div class="flex gap-4 mb-3">
+                            <div class="flex flex-col items-center justify-center p-3 bg-blue-50 text-blue-600 rounded-lg w-1/3">
+                                <i class="fa-brands fa-linkedin text-xl mb-1"></i>
+                                <span class="text-xs font-medium">LinkedIn</span>
+                            </div>
+                            <div class="flex flex-col items-center justify-center p-3 bg-gray-50 text-gray-600 rounded-lg w-1/3">
+                                <i class="fa-regular fa-envelope text-xl mb-1"></i>
+                                <span class="text-xs font-medium">Email</span>
+                            </div>
+                            <div class="flex flex-col items-center justify-center p-3 bg-purple-50 text-purple-600 rounded-lg w-1/3 text-center">
+                                <i class="fa-solid fa-bullhorn text-xl mb-1"></i>
+                                <span class="text-[10px] font-medium leading-tight">Campañas Visuales</span>
+                            </div>
+                        </div>
+
+                        <!-- Canal Adicional: Llamados -->
+                        <div class="flex items-center gap-3 bg-orange-50 p-2.5 rounded-lg border border-orange-100">
+                             <div class="bg-white w-8 h-8 flex items-center justify-center rounded text-mti-orange shadow-sm border border-orange-100 flex-shrink-0">
+                                <i class="fa-solid fa-phone text-sm"></i>
+                             </div>
+                             <div>
+                                <span class="block text-xs font-bold text-gray-700">Llamados de Apoyo</span>
+                                <span class="block text-[10px] text-gray-500 leading-tight">Medida adicional incorporada por 1 semana.</span>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Estructura Operativa -->
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                        <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">Estructura Operativa</h3>
+                        
+                        <!-- Base Contemplada -->
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
+                                <i class="fa-brands fa-linkedin text-mti-teal text-xl mb-1"></i>
+                                <div class="font-bold text-mti-dark text-sm leading-tight">1 Perfil</div>
+                                <div class="text-[10px] text-gray-400 uppercase tracking-wide">LinkedIn</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center border border-gray-100">
+                                <i class="fa-regular fa-envelope text-mti-teal text-xl mb-1"></i>
+                                <div class="font-bold text-mti-dark text-sm leading-tight">1 Alias</div>
+                                <div class="text-[10px] text-gray-400 uppercase tracking-wide">Correo</div>
+                            </div>
+                        </div>
+
+                        <!-- Detalles Operativos (Notas) -->
+                        <div class="space-y-2 border-t border-gray-100 pt-3">
+                            <div class="flex items-start gap-2 text-xs text-gray-600">
+                                <i class="fa-solid fa-circle-exclamation text-mti-orange mt-0.5 text-[10px]"></i>
+                                <span class="leading-tight">Rotación de perfil principal y 1 mes con simultaneidad.</span>
+                            </div>
+                            <!-- Nota pequeña Histórico -->
+                            <p class="text-[10px] text-gray-400 pl-4 leading-tight italic">
+                                * Se llegaron a utilizar 3 perfiles distintos a lo largo del proyecto.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOTA CONTEXTUAL -->
+            <div class="bg-blue-50 border-l-4 border-blue-200 p-4 rounded-r-lg flex gap-4 items-start">
+                <i class="fa-solid fa-circle-info text-blue-300 mt-1"></i>
+                <div class="text-sm text-blue-800">
+                    <strong>Notas de contexto temporal:</strong> Julio sin generación (setup). Diciembre con pausa de 2 semanas por estacionalidad. Enero reactivación progresiva en semana 1.
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 2: ICP (ACORDEONES) -->
+        <!-- ========================================== -->
+        <section id="icp" class="animate-fade-in scroll-mt-24">
+            
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-full bg-mti-teal flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-users-viewfinder text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-mti-dark">ICP: Perfil de Cliente Ideal</h2>
+                    <p class="text-sm text-gray-500">Segmentación estratégica utilizada por línea de negocio</p>
+                </div>
+            </div>
+
+            <!-- ACORDEÓN 1: SERVICIOS DE IMPRESIÓN -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+                
+                <!-- Header del Acordeón -->
+                <button onclick="toggleAccordion('icp1')" class="w-full flex justify-between items-center p-6 bg-white hover:bg-gray-50 transition-colors text-left focus:outline-none cursor-pointer">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded bg-teal-50 text-mti-teal flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-print"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-mti-teal">ICP 1 – SERVICIOS DE IMPRESIÓN</h3>
+                    </div>
+                    <i id="icon-icp1" class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300 accordion-icon"></i>
+                </button>
+
+                <!-- Contenido del Acordeón -->
+                <div id="icp1" class="accordion-content border-t border-gray-100 bg-gray-50/30">
+                    <div class="p-6 md:p-8 space-y-8">
+                        
+                        <!-- 1. OBJETIVO -->
+                        <div class="bg-blue-50/50 p-6 rounded-lg border-l-4 border-mti-teal">
+                            <h4 class="text-sm font-bold text-mti-teal uppercase mb-3"><i class="fa-solid fa-crosshairs mr-2"></i>Objetivo del ICP</h4>
+                            <div class="text-sm text-gray-700 space-y-3 leading-relaxed">
+                                <p>El Perfil de Cliente Ideal (ICP) de Alldora tiene como propósito definir claramente el tipo de empresas que pueden beneficiarse de los Servicios Administrados de Impresión (MPS), permitiendo construir una base de datos altamente segmentada, precisa y alineada a su propuesta de valor.</p>
+                                <p>Este ICP busca identificar organizaciones que enfrenten desafíos con sus actuales soluciones de impresión, tales como equipos obsoletos, altos costos operativos, baja visibilidad del consumo y una infraestructura poco integrada con su entorno digital.</p>
+                                <p>Gracias al enfoque integral de Alldora que incluye diagnóstico personalizado, equipos modernos, monitoreo en tiempo real, soporte técnico 24/7 y herramientas de control, el ICP nos permite focalizar la prospección en empresas que valoran la continuidad operativa, la eficiencia, la transformación digital y la sostenibilidad.</p>
+                                <p class="font-medium">Este perfil será la base para construir una base de datos estratégica, desde la cual se podrán nutrir campañas de prospección.</p>
+                            </div>
+                        </div>
+
+                        <!-- GRID: Demográficos, Necesidades, Dolores -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            
+                            <!-- 2. Demográficos -->
+                            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                <h4 class="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Características de Empresa</h4>
+                                <ul class="space-y-4 text-sm">
+                                    <li>
+                                        <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Verticales</span>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span class="px-2 py-1 bg-gray-100 rounded text-gray-700">Salud</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded text-gray-700">Manufactura</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded text-gray-700">Logística</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded text-gray-700">Financiera</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded text-gray-700">Educación</span>
+                                        </div>
+                                        <div class="mt-2 text-red-500 text-xs font-bold flex items-center gap-1">
+                                            <i class="fa-solid fa-circle-xmark"></i> Excluir Sector Público
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Ubicación</span>
+                                        <span class="text-gray-800 font-medium">México 🇲🇽</span>
+                                    </li>
+                                    <li>
+                                        <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Tamaño</span>
+                                        <span class="text-gray-800 font-medium"><i class="fa-solid fa-users mr-2 text-gray-400"></i>+200 empleados</span>
+                                    </li>
+                                    <li>
+                                        <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Áreas de llegada</span>
+                                        <ul class="list-disc list-inside text-gray-600 pl-1">
+                                            <li>Tecnología</li>
+                                            <li>Infraestructura</li>
+                                            <li>Compras</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- 3. Necesidades Específicas -->
+                            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                <h4 class="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Necesidades Específicas</h4>
+                                <ul class="space-y-3 text-sm text-gray-600">
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Reducir costos operativos mediante control y monitoreo.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Garantizar continuidad operativa (evitar fallas).</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Integrar impresión a flujos digitales.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Visibilidad y trazabilidad para cumplimiento.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Seguridad en documentos sensibles.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Modernizar infraestructura tecnológica.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Soporte técnico especializado 24/7.</li>
+                                </ul>
+                            </div>
+
+                            <!-- 4. Puntos de Dolor -->
+                            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                <h4 class="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Puntos de Dolor</h4>
+                                <ul class="space-y-3 text-sm text-gray-600">
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-triangle-exclamation text-mti-orange mt-1"></i> Equipos obsoletos y fallas frecuentes.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-triangle-exclamation text-mti-orange mt-1"></i> Falta de visibilidad de gastos.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-triangle-exclamation text-mti-orange mt-1"></i> Costos elevados por consumibles/mantenimiento.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-triangle-exclamation text-mti-orange mt-1"></i> Soporte técnico lento.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-triangle-exclamation text-mti-orange mt-1"></i> Proveedores múltiples sin integración.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-triangle-exclamation text-mti-orange mt-1"></i> Baja seguridad (riesgo filtraciones).</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 5. Roles y 6. Patrones -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            <!-- Roles Clave -->
+                            <div class="bg-gray-100 p-5 rounded-lg border border-gray-200">
+                                <h4 class="text-sm font-bold text-gray-800 mb-4"><i class="fa-solid fa-user-tie mr-2 text-gray-500"></i>Roles Clave y Decisores</h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-xs font-bold text-mti-teal uppercase mb-1">Tecnología</p>
+                                        <ul class="text-xs text-gray-600 space-y-1">
+                                            <li>CIO / CTO</li>
+                                            <li>Jefe de Tecnología / Sistemas</li>
+                                            <li>Responsable Soporte / Mesa Ayuda</li>
+                                            <li>Encargado Seguridad Informática</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-mti-teal uppercase mb-1">Infraestructura</p>
+                                        <ul class="text-xs text-gray-600 space-y-1">
+                                            <li>Gerente Infraestructura / Ops</li>
+                                            <li>Facility Manager</li>
+                                            <li>Servicios Generales</li>
+                                        </ul>
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <p class="text-xs font-bold text-mti-teal uppercase mb-1">Compras</p>
+                                        <ul class="text-xs text-gray-600 space-y-1">
+                                            <li>Jefe Compras / Gte. Abastecimiento</li>
+                                            <li>Analista de Compras</li>
+                                            <li>Encargado Contratos</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Patrones de Compra -->
+                            <div class="bg-mti-teal/5 p-5 rounded-lg border border-mti-teal/20">
+                                <h4 class="text-sm font-bold text-gray-800 mb-4"><i class="fa-solid fa-cart-shopping mr-2 text-mti-teal"></i>Patrones de Compra</h4>
+                                <ul class="space-y-2 text-sm text-gray-700">
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-teal mt-1"></i> <strong>Analíticos:</strong> evalúan calidad, soporte y ROI.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-teal mt-1"></i> <strong>Referencias:</strong> requieren casos de éxito.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-teal mt-1"></i> <strong>Decisión compartida:</strong> TI + Compras + Finanzas.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-teal mt-1"></i> <strong>Priorizan SLA:</strong> continuidad operativa es clave.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-teal mt-1"></i> <strong>Largo plazo:</strong> buscan partners, no solo proveedores.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-teal mt-1"></i> <strong>Reactivos:</strong> compra detonada por fallas o costos.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACORDEÓN 2: RPA -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                
+                <!-- Header del Acordeón -->
+                <button onclick="toggleAccordion('icp2')" class="w-full flex justify-between items-center p-6 bg-white hover:bg-gray-50 transition-colors text-left focus:outline-none cursor-pointer">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded bg-gray-100 text-gray-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-700">ICP 2 – RPA (AUTOMATIZACIÓN ROBÓTICA)</h3>
+                    </div>
+                    <i id="icon-icp2" class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300 accordion-icon"></i>
+                </button>
+
+                <!-- Contenido del Acordeón -->
+                <div id="icp2" class="accordion-content border-t border-gray-100 bg-gray-50/30">
+                    <div class="p-6 md:p-8 space-y-8">
+                        
+                        <!-- 1. OBJETIVO -->
+                        <div class="bg-orange-50/50 p-6 rounded-lg border-l-4 border-mti-orange">
+                            <h4 class="text-sm font-bold text-mti-orange uppercase mb-3"><i class="fa-solid fa-crosshairs mr-2"></i>Objetivo del ICP</h4>
+                            <div class="text-sm text-gray-700 space-y-3 leading-relaxed">
+                                <p>El objetivo de este ICP es identificar y priorizar empresas que puedan beneficiarse de la Automatización Robótica de Procesos (RPA) ofrecida por Alldora, orientada a optimizar la productividad, reducir errores manuales y liberar recursos operativos.</p>
+                                <p>El perfil busca organizaciones con procesos administrativos o repetitivos intensivos, alto volumen de datos y múltiples sistemas que operan de forma desconectada.</p>
+                                <p class="font-medium">La RPA permite a estas empresas automatizar tareas rutinarias como conciliaciones contables, control de inventarios, órdenes de compra, reportes o validaciones, logrando mayor eficiencia, precisión y trazabilidad.</p>
+                            </div>
+                        </div>
+
+                        <!-- GRID: Demográficos, Necesidades, Dolores -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            
+                            <!-- 2. Demográficos -->
+                            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                <h4 class="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Características de Empresa</h4>
+                                <ul class="space-y-4 text-sm">
+                                    <li>
+                                        <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Verticales</span>
+                                        <div class="flex flex-wrap gap-2 text-[11px]">
+                                            <span class="px-2 py-1 bg-gray-100 rounded">Salud</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded">Manufactura</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded">Logística</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded">Financiera</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded">Educación</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded">Retail & Ecomm</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded">Telecom</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded">Automotriz</span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded">Hospitalidad</span>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Ubicación</span>
+                                        <span class="text-gray-800 font-medium">México 🇲🇽 (Inicial), Chile, Colombia, Guatemala, Perú, Honduras</span>
+                                    </li>
+                                    <li>
+                                        <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Tamaño</span>
+                                        <span class="text-gray-800 font-medium"><i class="fa-solid fa-users mr-2 text-gray-400"></i>+200 empleados</span>
+                                    </li>
+                                    <li>
+                                        <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Áreas de llegada</span>
+                                        <ul class="list-disc list-inside text-gray-600 pl-1 text-xs">
+                                            <li>Tecnología / Transf. Digital</li>
+                                            <li>Operaciones / Procesos</li>
+                                            <li>Finanzas / Admin / Tesorería</li>
+                                            <li>Compras / Logística</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- 3. Necesidades Específicas -->
+                            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                <h4 class="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Necesidades Específicas</h4>
+                                <ul class="space-y-3 text-sm text-gray-600">
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Reducir tareas repetitivas administrativas.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Aumentar productividad sin sumar headcount.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Integrar sistemas internos (ERP, CRM).</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Asegurar precisión (cero errores humanos).</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Estandarizar procesos entre sedes.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Optimizar tiempos en procesos críticos.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Liberar talento para tareas estratégicas.</li>
+                                </ul>
+                            </div>
+
+                            <!-- 4. Puntos de Dolor -->
+                            <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+                                <h4 class="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Puntos de Dolor</h4>
+                                <ul class="space-y-3 text-sm text-gray-600">
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-bolt text-mti-orange mt-1"></i> Procesos lentos y dependientes de personas.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-bolt text-mti-orange mt-1"></i> Errores frecuentes en ops críticas (conciliaciones).</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-bolt text-mti-orange mt-1"></i> Sistemas desconectados (islas de información).</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-bolt text-mti-orange mt-1"></i> Altos costos operativos por duplicidad.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-bolt text-mti-orange mt-1"></i> Dificultad para escalar sin más personal.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-bolt text-mti-orange mt-1"></i> Falta de trazabilidad de ejecución.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 5. Roles y 6. Patrones -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            <!-- Roles Clave -->
+                            <div class="bg-gray-100 p-5 rounded-lg border border-gray-200">
+                                <h4 class="text-sm font-bold text-gray-800 mb-4"><i class="fa-solid fa-user-gear mr-2 text-gray-500"></i>Roles Clave y Decisores</h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="col-span-1 sm:col-span-2">
+                                        <p class="text-xs font-bold text-mti-orange uppercase mb-1">Presidencia / Gerencia General</p>
+                                        <span class="text-xs text-gray-600 block mb-2">CEO, Director General, Presidente Ejecutivo</span>
+                                    </div>
+                                    
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-700 uppercase mb-1">Tecnología</p>
+                                        <ul class="text-xs text-gray-600 space-y-0.5">
+                                            <li>CIO / CTO</li>
+                                            <li>Dir. TI / Gte. Automatización</li>
+                                            <li>Líder Proyectos Digitales</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-700 uppercase mb-1">Finanzas / Admin</p>
+                                        <ul class="text-xs text-gray-600 space-y-0.5">
+                                            <li>CFO / Gte. Financiero</li>
+                                            <li>Controller</li>
+                                            <li>Jefe Contabilidad / Tesorería</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-700 uppercase mb-1">Operaciones</p>
+                                        <ul class="text-xs text-gray-600 space-y-0.5">
+                                            <li>Dir. Ops / Gte. Procesos</li>
+                                            <li>Continuous Improvement Mgr</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-700 uppercase mb-1">Compras / Logística</p>
+                                        <ul class="text-xs text-gray-600 space-y-0.5">
+                                            <li>Gte. Compras / Supply Chain</li>
+                                            <li>Dir. Logística / Ops</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Patrones de Compra -->
+                            <div class="bg-orange-50/50 p-5 rounded-lg border border-mti-orange/20">
+                                <h4 class="text-sm font-bold text-gray-800 mb-4"><i class="fa-solid fa-cart-shopping mr-2 text-mti-orange"></i>Patrones de Compra</h4>
+                                <ul class="space-y-2 text-sm text-gray-700">
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-orange mt-1"></i> <strong>Necesidad:</strong> impulsada por eficiencia operativa.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-orange mt-1"></i> <strong>Validación Técnica:</strong> TI evalúa seguridad/compatibilidad.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-orange mt-1"></i> <strong>Consultiva:</strong> TI + Finanzas + Ops deciden juntos.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-orange mt-1"></i> <strong>Resultados:</strong> ROI, ahorro horas, reducción errores.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-orange mt-1"></i> <strong>Escalable:</strong> inician con piloto y luego expanden.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-mti-orange mt-1"></i> <strong>Partnership:</strong> buscan acompañamiento continuo.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCRIPT SIMPLE PARA ACORDEÓN -->
+            <script>
+                function toggleAccordion(id) {
+                    const content = document.getElementById(id);
+                    const icon = document.getElementById('icon-' + id);
+                    
+                    if (content.classList.contains('open')) {
+                        content.style.maxHeight = null;
+                        content.classList.remove('open');
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        // Cerrar otros (opcional, si quisieras comportamiento exclusivo)
+                        // document.querySelectorAll('.accordion-content').forEach(c => {
+                        //     c.style.maxHeight = null;
+                        //     c.classList.remove('open');
+                        // });
+                        
+                        content.classList.add('open');
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                }
+            </script>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 3: PERFILES UTILIZADOS (COMPLETA) -->
+        <!-- ========================================== -->
+        <section id="perfiles" class="animate-fade-in scroll-mt-24">
+            
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-full bg-mti-teal flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-users text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-mti-dark">Perfiles Utilizados</h2>
+                    <p class="text-sm text-gray-500">Análisis operativo, tiempos de uso y rendimiento por perfil</p>
+                </div>
+            </div>
+
+            <!-- VISIÓN GENERAL (RESUMEN) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                
+                <!-- Card Total -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center text-center">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 mb-3">
+                        <i class="fa-solid fa-user-group text-xl"></i>
+                    </div>
+                    <span class="text-4xl font-bold text-mti-dark">3</span>
+                    <span class="text-xs uppercase font-bold text-gray-400 mt-1 tracking-wider">Perfiles Totales</span>
+                </div>
+
+                <!-- Card Tiempo -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <h4 class="text-xs font-bold text-mti-teal uppercase mb-2">Estrategia de Uso</h4>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-clock text-gray-400 mt-1"></i> No simultáneo (secuencial).</li>
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-layer-group text-gray-400 mt-1"></i> Solo 1 mes con 2 activos en paralelo.</li>
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-user-minus text-gray-400 mt-1"></i> Baja de perfil alternativo en Diciembre.</li>
+                    </ul>
+                </div>
+
+                <!-- Card Objetivo -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <h4 class="text-xs font-bold text-mti-teal uppercase mb-2">Objetivo de la Rotación</h4>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-bullseye text-mti-orange mt-1"></i> Ajustar mensaje por servicio.</li>
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-arrow-trend-up text-mti-orange mt-1"></i> Optimizar resultados.</li>
+                        <li class="flex items-start gap-2"><i class="fa-solid fa-rotate text-mti-orange mt-1"></i> Recuperar ritmo de IQLs.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- DETALLE DE PERFILES (CARDS HORIZONTALES) -->
+            <div class="space-y-8 mb-12">
+
+                <!-- PERFIL 1: JUAN -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:flex-row">
+                    <!-- Left: Foto e Info Base -->
+                    <div class="md:w-1/3 bg-gray-50 p-6 flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-gray-200">
+                        <div class="w-24 h-24 bg-gray-200 rounded-full mb-4 flex items-center justify-center text-gray-400 text-xs font-bold border-4 border-white shadow-sm overflow-hidden">
+                            <!-- Placeholder Image -->
+                            <div class="bg-gray-300 w-full h-full flex items-center justify-center">Juan foto</div>
+                        </div>
+                        <h3 class="text-lg font-bold text-mti-dark">JUAN</h3>
+                        <p class="text-sm text-mti-teal font-medium mb-2">Sales Manager / Transf. Digital</p>
+                        <div class="text-xs text-gray-500 space-y-1">
+                            <p>+17 años en ventas B2B Tech</p>
+                            <p>Fuerte en MPS</p>
+                        </div>
+                        <div class="mt-4 bg-white px-3 py-1 rounded-full border border-gray-200 text-xs font-bold text-gray-600">
+                            <i class="fa-regular fa-calendar mr-1"></i> 2.5 Meses
+                        </div>
+                    </div>
+
+                    <!-- Right: Métricas y Análisis -->
+                    <div class="md:w-2/3 p-6 flex flex-col justify-between">
+                        <!-- Metrics Grid -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <div class="text-center">
+                                <span class="block text-2xl font-bold text-mti-dark">19%</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Aceptación</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-2xl font-bold text-mti-dark">22%</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Respuesta</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-2xl font-bold text-mti-teal">21</span>
+                                <span class="text-[10px] text-gray-400 uppercase">IQLs</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-lg font-bold text-gray-600 mt-1">100%</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Impresión</span>
+                            </div>
+                        </div>
+
+                        <!-- Analysis -->
+                        <div class="mb-4">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Lectura Ejecutiva</h4>
+                            <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                                <li>Perfil alineado al servicio de impresión.</li>
+                                <li>Buen volumen en fase inicial.</li>
+                                <li>Base de arranque del pipeline.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Alignment Badges -->
+                        <div class="flex flex-col sm:flex-row gap-3 mt-auto pt-4 border-t border-gray-100">
+                            <div class="flex-1">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-bold text-mti-teal">Match Impresión</span>
+                                    <span class="text-mti-teal">Alto</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div class="bg-mti-teal h-1.5 rounded-full" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1 opacity-50">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-bold text-gray-400">Match RPA</span>
+                                    <span class="text-gray-400">N/A</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div class="bg-gray-300 h-1.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERFIL 2: MARÍA -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:flex-row">
+                    <!-- Left -->
+                    <div class="md:w-1/3 bg-gray-50 p-6 flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-gray-200">
+                        <div class="w-24 h-24 bg-gray-200 rounded-full mb-4 flex items-center justify-center text-gray-400 text-xs font-bold border-4 border-white shadow-sm overflow-hidden">
+                            <div class="bg-gray-300 w-full h-full flex items-center justify-center">Maria foto</div>
+                        </div>
+                        <h3 class="text-lg font-bold text-mti-dark">MARÍA</h3>
+                        <p class="text-sm text-mti-teal font-medium mb-2">Inside Sales</p>
+                        <div class="text-xs text-gray-500 space-y-1">
+                            <p>+13 años en ventas Tech</p>
+                            <p>Híbrido: Impresión + Auto</p>
+                        </div>
+                        <div class="mt-4 bg-white px-3 py-1 rounded-full border border-gray-200 text-xs font-bold text-gray-600">
+                            <i class="fa-regular fa-calendar mr-1"></i> 4.5 Meses
+                        </div>
+                    </div>
+
+                    <!-- Right -->
+                    <div class="md:w-2/3 p-6 flex flex-col justify-between">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <div class="text-center">
+                                <span class="block text-2xl font-bold text-mti-dark">28%</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Aceptación</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-2xl font-bold text-mti-dark">17%</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Respuesta</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-2xl font-bold text-mti-teal">19</span>
+                                <span class="text-[10px] text-gray-400 uppercase">IQLs</span>
+                            </div>
+                            <div class="text-center flex flex-col justify-center items-center">
+                                <div class="text-[10px] font-bold text-mti-orange bg-orange-50 px-2 py-0.5 rounded-full mb-1">10 RPA</div>
+                                <div class="text-[10px] font-bold text-mti-teal bg-teal-50 px-2 py-0.5 rounded-full">9 Impresión</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Lectura Ejecutiva</h4>
+                            <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                                <li>Versátil para ambos servicios.</li>
+                                <li>Testeó doble enfoque sin duplicar costo.</li>
+                                <li>Clave en la transición a RPA.</li>
+                            </ul>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3 mt-auto pt-4 border-t border-gray-100">
+                            <div class="flex-1">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-bold text-mti-teal">Match Impresión</span>
+                                    <span class="text-mti-teal">Medio/Alto</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div class="bg-mti-teal h-1.5 rounded-full" style="width: 70%"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-bold text-mti-orange">Match RPA</span>
+                                    <span class="text-mti-orange">Alto</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div class="bg-mti-orange h-1.5 rounded-full" style="width: 90%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERFIL 3: ALEJANDRO -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:flex-row">
+                    <!-- Left -->
+                    <div class="md:w-1/3 bg-gray-50 p-6 flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-gray-200">
+                        <div class="w-24 h-24 bg-gray-200 rounded-full mb-4 flex items-center justify-center text-gray-400 text-xs font-bold border-4 border-white shadow-sm overflow-hidden">
+                            <div class="bg-gray-300 w-full h-full flex items-center justify-center">Alejandro foto</div>
+                        </div>
+                        <h3 class="text-lg font-bold text-mti-dark">ALEJANDRO</h3>
+                        <p class="text-sm text-mti-teal font-medium mb-2">Sales Director</p>
+                        <div class="text-xs text-gray-500 space-y-1">
+                            <p>Liderazgo Regional / C-Level</p>
+                            <p>Seniority Alto</p>
+                        </div>
+                        <div class="mt-4 bg-white px-3 py-1 rounded-full border border-gray-200 text-xs font-bold text-gray-600">
+                            <i class="fa-regular fa-calendar mr-1"></i> 1 Mes
+                        </div>
+                    </div>
+
+                    <!-- Right -->
+                    <div class="md:w-2/3 p-6 flex flex-col justify-between">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <div class="text-center">
+                                <span class="block text-2xl font-bold text-green-600">32%</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Aceptación</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-2xl font-bold text-green-600">29%</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Respuesta</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-2xl font-bold text-mti-teal">9</span>
+                                <span class="text-[10px] text-gray-400 uppercase">IQLs</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-lg font-bold text-gray-600 mt-1">100%</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Impresión</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Lectura Ejecutiva</h4>
+                            <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                                <li>Mejor desempeño relativo en tiempo corto.</li>
+                                <li>Alta autoridad percibida.</li>
+                                <li>Validación impacto de seniority.</li>
+                            </ul>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-3 mt-auto pt-4 border-t border-gray-100">
+                            <div class="flex-1">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-bold text-mti-teal">Match Impresión</span>
+                                    <span class="text-mti-teal">Muy Alto</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div class="bg-mti-teal h-1.5 rounded-full" style="width: 95%"></div>
+                                </div>
+                            </div>
+                            <div class="flex-1 opacity-50">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="font-bold text-gray-400">Match RPA</span>
+                                    <span class="text-gray-400">N/A</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div class="bg-gray-300 h-1.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- COMPARATIVA GENERAL Y APRENDIZAJES -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Tabla Comparativa -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+                    <h4 class="text-sm font-bold text-mti-dark mb-4 border-b border-gray-100 pb-2">Comparativa de Desempeño</h4>
+                    <table class="w-full text-sm text-left">
+                        <thead>
+                            <tr class="text-xs text-gray-400 uppercase border-b border-gray-100">
+                                <th class="pb-2 font-medium">Perfil</th>
+                                <th class="pb-2 font-medium">Uso</th>
+                                <th class="pb-2 font-medium text-center">Acept.</th>
+                                <th class="pb-2 font-medium text-center">Resp.</th>
+                                <th class="pb-2 font-medium text-center">IQLs</th>
+                                <th class="pb-2 font-medium text-right">Alineación</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600">
+                            <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                                <td class="py-3 font-bold text-mti-dark">Juan</td>
+                                <td class="py-3">2.5 m</td>
+                                <td class="py-3 text-center">19%</td>
+                                <td class="py-3 text-center">22%</td>
+                                <td class="py-3 text-center font-bold text-mti-teal">21</td>
+                                <td class="py-3 text-right text-xs">
+                                    <span class="bg-teal-50 text-mti-teal px-2 py-1 rounded">Impresión</span>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                                <td class="py-3 font-bold text-mti-dark">María</td>
+                                <td class="py-3">4.5 m</td>
+                                <td class="py-3 text-center">28%</td>
+                                <td class="py-3 text-center">17%</td>
+                                <td class="py-3 text-center font-bold text-mti-teal">19</td>
+                                <td class="py-3 text-right text-xs">
+                                    <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded">Híbrido</span>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                                <td class="py-3 font-bold text-mti-dark">Alejandro</td>
+                                <td class="py-3">1 m</td>
+                                <td class="py-3 text-center font-bold text-green-600">32%</td>
+                                <td class="py-3 text-center font-bold text-green-600">29%</td>
+                                <td class="py-3 text-center font-bold text-mti-teal">9</td>
+                                <td class="py-3 text-right text-xs">
+                                    <span class="bg-teal-50 text-mti-teal px-2 py-1 rounded">Impresión+</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Aprendizaje Clave -->
+                <div class="bg-mti-dark text-white p-6 rounded-xl shadow-lg flex flex-col justify-center relative overflow-hidden">
+                    <i class="fa-solid fa-lightbulb absolute -right-4 -bottom-4 text-8xl text-white opacity-10 rotate-12"></i>
+                    <h4 class="text-sm font-bold text-mti-orange uppercase mb-4 relative z-10">Aprendizajes Clave</h4>
+                    <ul class="space-y-3 text-sm relative z-10">
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-check text-mti-teal mt-1"></i>
+                            <span>La <strong>experiencia en años</strong> en el servicio prospectado (casos Juan y Alejandro) influye significativamente en el resultado.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-check text-mti-teal mt-1"></i>
+                            <span>Perfiles <strong>híbridos</strong> dan flexibilidad ante cambios de alcance.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-check text-mti-teal mt-1"></i>
+                            <span>La rotación permitió <strong>optimizar</strong> sin cambiar el objetivo.</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 5: TIMELINE (COMPLETA) -->
+        <!-- ========================================== -->
+        <section id="timeline" class="animate-fade-in scroll-mt-24">
+            
+            <div class="flex items-center gap-3 mb-10">
+                <div class="w-10 h-10 rounded-full bg-mti-teal flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-timeline text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-mti-dark">Timeline del Proyecto</h2>
+                    <p class="text-sm text-gray-500">Cronología de acciones, canales activados y perfiles involucrados</p>
+                </div>
+            </div>
+
+            <!-- CONTENEDOR TIMELINE -->
+            <div class="relative pl-8 md:pl-0">
+                
+                <!-- Línea Central (Vertical) -->
+                <div class="absolute left-0 md:left-1/2 top-0 bottom-0 w-0.5 bg-gray-200 transform md:-translate-x-1/2"></div>
+
+                <!-- ITEM 1: JULIO -->
+                <div class="relative mb-12">
+                    <div class="flex flex-col md:flex-row items-center">
+                        <!-- Spacer/Content Left -->
+                        <div class="flex-1 w-full md:w-1/2 md:pr-12 md:text-right">
+                            <h3 class="text-lg font-bold text-mti-dark mb-1">JULIO – Setup Inicial</h3>
+                            <div class="inline-flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-xs font-semibold text-gray-500 mb-3">
+                                <i class="fa-solid fa-gear"></i> Configuración
+                            </div>
+                        </div>
+                        
+                        <!-- Dot Central -->
+                        <div class="absolute left-[-5px] md:left-1/2 w-4 h-4 bg-mti-teal rounded-full border-4 border-white shadow-md transform md:-translate-x-1/2 z-10"></div>
+                        
+                        <!-- Content Right (Card) -->
+                        <div class="flex-1 w-full md:w-1/2 md:pl-12 mt-4 md:mt-0">
+                            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <ul class="space-y-2 text-sm text-gray-600 mb-4">
+                                    <li class="flex items-start gap-2 md:justify-start"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Setup operativo y definición de ICP.</li>
+                                    <li class="flex items-start gap-2 md:justify-start"><i class="fa-solid fa-pen-nib text-mti-teal mt-1"></i> Preparación de mensajes y herramientas.</li>
+                                </ul>
+                                <div class="border-t border-gray-100 pt-3 flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-400 uppercase">Perfil:</span>
+                                    <span class="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded border border-blue-100 font-medium">Juan</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEM 2: AGOSTO -->
+                <div class="relative mb-12">
+                    <div class="flex flex-col md:flex-row-reverse items-center">
+                        <!-- Title Right -->
+                        <div class="flex-1 w-full md:w-1/2 md:pl-12 md:text-left">
+                            <h3 class="text-lg font-bold text-mti-dark mb-1">AGOSTO – Activación</h3>
+                            <div class="inline-flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full text-xs font-semibold text-blue-600 mb-3">
+                                <i class="fa-solid fa-rocket"></i> Campañas
+                            </div>
+                        </div>
+                        
+                        <!-- Dot -->
+                        <div class="absolute left-[-5px] md:left-1/2 w-4 h-4 bg-mti-orange rounded-full border-4 border-white shadow-md transform md:-translate-x-1/2 z-10"></div>
+                        
+                        <!-- Card Left -->
+                        <div class="flex-1 w-full md:w-1/2 md:pr-12 mt-4 md:mt-0">
+                            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <ul class="space-y-2 text-sm text-gray-600 mb-4">
+                                    <li class="flex items-start gap-2"><i class="fa-brands fa-linkedin text-blue-600 mt-1"></i> Prospección activa LinkedIn.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-regular fa-envelope text-gray-500 mt-1"></i> Inicio campañas Email (Klenty).</li>
+                                </ul>
+                                <div class="bg-gray-50 p-3 rounded-lg text-xs text-gray-500 mb-3 border border-gray-100">
+                                    <strong class="block text-gray-700 mb-1">Campañas Activas:</strong>
+                                    <ul class="list-disc list-inside">
+                                        <li>General (3 toques)</li>
+                                        <li>Área Compras (3 toques)</li>
+                                        <li>Área TI (3 toques)</li>
+                                    </ul>
+                                </div>
+                                <div class="border-t border-gray-100 pt-3 flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-400 uppercase">Perfil:</span>
+                                    <span class="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded border border-blue-100 font-medium">Juan</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEM 3: SEPTIEMBRE -->
+                <div class="relative mb-12">
+                    <div class="flex flex-col md:flex-row items-center">
+                        <div class="flex-1 w-full md:w-1/2 md:pr-12 md:text-right">
+                            <h3 class="text-lg font-bold text-mti-dark mb-1">SEPTIEMBRE – Escalamiento</h3>
+                            <div class="inline-flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full text-xs font-semibold text-green-600 mb-3">
+                                <i class="fa-solid fa-chart-line"></i> Transición
+                            </div>
+                        </div>
+                        <div class="absolute left-[-5px] md:left-1/2 w-4 h-4 bg-mti-teal rounded-full border-4 border-white shadow-md transform md:-translate-x-1/2 z-10"></div>
+                        <div class="flex-1 w-full md:w-1/2 md:pl-12 mt-4 md:mt-0">
+                            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <ul class="space-y-2 text-sm text-gray-600 mb-4">
+                                    <li class="flex items-start gap-2"><i class="fa-brands fa-linkedin text-blue-600 mt-1"></i> Continuidad LinkedIn.</li>
+                                    <!-- NOTA AGREGADA SOBRE RAMP-UP -->
+                                    <li class="flex items-start gap-2 bg-orange-50 p-2 rounded text-xs border border-orange-100">
+                                        <i class="fa-solid fa-triangle-exclamation text-orange-500 mt-0.5"></i> 
+                                        <span><strong>Ramp-up Perfil María:</strong> Trabajo previo necesario para alcanzar mínimo 500 contactos (impacto en tiempos de ejecución).</span>
+                                    </li>
+                                    <li class="flex items-start gap-2"><i class="fa-regular fa-envelope text-gray-500 mt-1"></i> Seguimiento campañas Klenty.</li>
+                                </ul>
+                                <div class="border-t border-gray-100 pt-3 flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-400 uppercase">Perfil:</span>
+                                    <span class="bg-purple-50 text-purple-700 text-xs px-2 py-1 rounded border border-purple-100 font-medium">María (Inicio)</span>
+                                    <span class="text-[10px] text-gray-400 italic ml-auto"><i class="fa-solid fa-arrow-right-arrow-left"></i> Transición desde Juan</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEM 4: OCTUBRE -->
+                <div class="relative mb-12">
+                    <div class="flex flex-col md:flex-row-reverse items-center">
+                        <div class="flex-1 w-full md:w-1/2 md:pl-12 md:text-left">
+                            <h3 class="text-lg font-bold text-mti-dark mb-1">OCTUBRE – Optimización</h3>
+                            <div class="inline-flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full text-xs font-semibold text-yellow-600 mb-3">
+                                <i class="fa-solid fa-sliders"></i> Ajustes
+                            </div>
+                        </div>
+                        <div class="absolute left-[-5px] md:left-1/2 w-4 h-4 bg-white border-4 border-gray-300 rounded-full shadow-md transform md:-translate-x-1/2 z-10"></div>
+                        <div class="flex-1 w-full md:w-1/2 md:pr-12 mt-4 md:mt-0">
+                            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <ul class="space-y-2 text-sm text-gray-600 mb-4">
+                                    <li class="flex items-start gap-2"><i class="fa-brands fa-linkedin text-blue-600 mt-1"></i> Prospección continua.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-wand-magic-sparkles text-yellow-500 mt-1"></i> Optimización de mensajes y secuencias.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-magnifying-glass text-gray-400 mt-1"></i> Seguimiento de leads.</li>
+                                </ul>
+                                <div class="border-t border-gray-100 pt-3 flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-400 uppercase">Perfil:</span>
+                                    <span class="bg-purple-50 text-purple-700 text-xs px-2 py-1 rounded border border-purple-100 font-medium">María</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEM 5: NOVIEMBRE -->
+                <div class="relative mb-12">
+                    <div class="flex flex-col md:flex-row items-center">
+                        <div class="flex-1 w-full md:w-1/2 md:pr-12 md:text-right">
+                            <h3 class="text-lg font-bold text-mti-dark mb-1">NOVIEMBRE – Ampliación</h3>
+                            <div class="inline-flex items-center gap-2 bg-orange-50 px-3 py-1 rounded-full text-xs font-semibold text-mti-orange mb-3">
+                                <i class="fa-solid fa-robot"></i> RPA + Email
+                            </div>
+                        </div>
+                        <div class="absolute left-[-5px] md:left-1/2 w-4 h-4 bg-mti-orange rounded-full border-4 border-white shadow-md transform md:-translate-x-1/2 z-10"></div>
+                        <div class="flex-1 w-full md:w-1/2 md:pl-12 mt-4 md:mt-0">
+                            <div class="bg-white p-5 rounded-xl border-l-4 border-l-mti-orange border-y border-r border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <ul class="space-y-2 text-sm text-gray-600 mb-4">
+                                    <li class="flex items-start gap-2"><i class="fa-brands fa-linkedin text-blue-600 mt-1"></i> Prospección LinkedIn.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-robot text-mti-orange mt-1"></i> <strong>Incorporación RPA (Media Nov).</strong></li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-bullhorn text-purple-500 mt-1"></i> Nuevas campañas correo.</li>
+                                </ul>
+                                <div class="bg-gray-50 p-3 rounded-lg text-xs text-gray-500 mb-3 border border-gray-100">
+                                    <strong class="block text-gray-700 mb-1">Campañas Activas:</strong>
+                                    <ul class="list-disc list-inside">
+                                        <li>Klenty: General 2 (3 toques)</li>
+                                        <li>Envíalo Simple: Visual RPA + Impresión</li>
+                                    </ul>
+                                </div>
+                                <div class="border-t border-gray-100 pt-3 flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-400 uppercase">Perfiles:</span>
+                                    <span class="bg-purple-50 text-purple-700 text-xs px-2 py-1 rounded border border-purple-100 font-medium">María</span>
+                                    <span class="bg-teal-50 text-mti-teal text-xs px-2 py-1 rounded border border-teal-100 font-medium">Alejandro</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEM 6: DICIEMBRE -->
+                <div class="relative mb-12">
+                    <div class="flex flex-col md:flex-row-reverse items-center">
+                        <div class="flex-1 w-full md:w-1/2 md:pl-12 md:text-left">
+                            <h3 class="text-lg font-bold text-mti-dark mb-1">DICIEMBRE – Ajuste</h3>
+                            <div class="inline-flex items-center gap-2 bg-red-50 px-3 py-1 rounded-full text-xs font-semibold text-red-500 mb-3">
+                                <i class="fa-solid fa-pause"></i> Estacionalidad
+                            </div>
+                        </div>
+                        <div class="absolute left-[-5px] md:left-1/2 w-4 h-4 bg-gray-400 rounded-full border-4 border-white shadow-md transform md:-translate-x-1/2 z-10"></div>
+                        <div class="flex-1 w-full md:w-1/2 md:pl-12 mt-4 md:mt-0">
+                            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <ul class="space-y-2 text-sm text-gray-600 mb-4">
+                                    <li class="flex items-start gap-2"><i class="fa-brands fa-linkedin text-blue-600 mt-1"></i> Prospección LinkedIn.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-regular fa-envelope text-gray-500 mt-1"></i> Continuidad campañas.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-robot text-gray-400 mt-1"></i> RPA activo hasta mediados de mes.</li>
+                                    <li class="flex items-start gap-2 text-red-500 font-medium"><i class="fa-regular fa-calendar-xmark mt-1"></i> Pausa operativa (últimas 2 semanas).</li>
+                                </ul>
+                                <div class="border-t border-gray-100 pt-3 flex items-center gap-2 flex-wrap">
+                                    <span class="text-xs font-bold text-gray-400 uppercase">Perfiles:</span>
+                                    <span class="bg-purple-50 text-purple-700 text-xs px-2 py-1 rounded border border-purple-100 font-medium">María</span>
+                                    <span class="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded border border-gray-200 font-medium line-through decoration-red-500">Alejandro</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEM 7: ENERO -->
+                <div class="relative">
+                    <div class="flex flex-col md:flex-row items-center">
+                        <div class="flex-1 w-full md:w-1/2 md:pr-12 md:text-right">
+                            <h3 class="text-lg font-bold text-mti-dark mb-1">ENERO – Reactivación</h3>
+                            <div class="inline-flex items-center gap-2 bg-teal-50 px-3 py-1 rounded-full text-xs font-semibold text-mti-teal mb-3">
+                                <i class="fa-solid fa-play"></i> Cierre
+                            </div>
+                        </div>
+                        <div class="absolute left-[-5px] md:left-1/2 w-4 h-4 bg-mti-dark rounded-full border-4 border-white shadow-md transform md:-translate-x-1/2 z-10"></div>
+                        <div class="flex-1 w-full md:w-1/2 md:pl-12 mt-4 md:mt-0">
+                            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                <ul class="space-y-2 text-sm text-gray-600 mb-4">
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-bolt text-mti-teal mt-1"></i> Reactivación Semana 1.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-brands fa-linkedin text-blue-600 mt-1"></i> Prospección LinkedIn.</li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-phone text-mti-orange mt-1"></i> <strong>Llamados de apoyo.</strong></li>
+                                    <li class="flex items-start gap-2"><i class="fa-solid fa-list-check text-gray-500 mt-1"></i> Seguimiento leads previos.</li>
+                                </ul>
+                                <div class="border-t border-gray-100 pt-3 flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-400 uppercase">Perfil:</span>
+                                    <span class="bg-purple-50 text-purple-700 text-xs px-2 py-1 rounded border border-purple-100 font-medium">María</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- CALLOUT VISUAL: NOTAS CLAVE -->
+            <div class="mt-16 bg-gradient-to-r from-gray-50 to-white border-l-4 border-mti-dark p-6 rounded-r-xl shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center">
+                <div class="bg-mti-dark text-white w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                    <i class="fa-solid fa-thumbtack text-xl"></i>
+                </div>
+                <div class="space-y-2 flex-grow">
+                    <h4 class="text-sm font-bold text-mti-dark uppercase mb-1">Notas Clave de Ejecución</h4>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-brands fa-linkedin text-blue-600 mt-1"></i>
+                            <span><strong>LinkedIn</strong> se mantuvo activo durante <u>todo el proyecto</u> como canal principal.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-robot text-mti-orange mt-1"></i>
+                            <span>El servicio <strong>RPA</strong> estuvo activo durante un período acotado (media de Nov a Dic).</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-phone text-gray-500 mt-1"></i>
+                            <span>Los <strong>llamados</strong> se incorporaron como soporte táctico en el cierre (Dic-Ene).</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 6: CAMPAÑAS (COMPLETA) -->
+        <!-- ========================================== -->
+        <section id="campanas" class="animate-fade-in scroll-mt-24">
+            
+            <div class="flex items-center gap-3 mb-10">
+                <div class="w-10 h-10 rounded-full bg-mti-teal flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-bullhorn text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-mti-dark">Campañas Ejecutadas</h2>
+                    <p class="text-sm text-gray-500">Estrategia multicanal, enfoque comunicacional y materiales</p>
+                </div>
+            </div>
+
+            <!-- BLOQUE 1: ENFOQUE COMUNICACIONAL -->
+            <div class="bg-gradient-to-r from-mti-dark to-slate-800 rounded-xl p-8 text-white shadow-lg mb-12 relative overflow-hidden">
+                <!-- Decoración -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-bl-full -mr-16 -mt-16"></div>
+                <i class="fa-regular fa-comments absolute bottom-4 right-8 text-8xl text-white opacity-5"></i>
+
+                <h3 class="text-mti-orange font-bold uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-crosshairs"></i> Enfoque Comunicacional
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                    <!-- Tono -->
+                    <div class="space-y-2">
+                        <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-mti-teal text-xl mb-2">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">Tono Conversacional</h4>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            Mensajes no invasivos diseñados para incentivar la conversación genuina y generar confianza desde el primer contacto.
+                        </p>
+                    </div>
+                    <!-- Nurturing -->
+                    <div class="space-y-2">
+                        <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-mti-orange text-xl mb-2">
+                            <i class="fa-solid fa-seedling"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">Nurturing Activo</h4>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            Uso estratégico de material educativo y casos de uso para educar al lead antes de la gestión comercial.
+                        </p>
+                    </div>
+                    <!-- Objetivo -->
+                    <div class="space-y-2">
+                        <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-blue-400 text-xl mb-2">
+                            <i class="fa-solid fa-filter"></i>
+                        </div>
+                        <h4 class="font-bold text-lg">Objetivo: IQL</h4>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            El foco fue lograr que el lead interactúe y manifieste interés (IQL) para que Alldora gestione el cierre de la reunión.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOQUE 2: CANALES (LINKEDIN & EMAIL) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+                
+                <!-- LINKEDIN (CANAL PRINCIPAL) -->
+                <div class="lg:col-span-7 bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                        <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl">
+                            <i class="fa-brands fa-linkedin-in"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-mti-dark">LinkedIn Outreach</h3>
+                            <span class="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Canal Principal</span>
+                        </div>
+                    </div>
+
+                    <div class="flex-grow space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Estrategia</h4>
+                                <ul class="text-sm text-gray-600 space-y-2">
+                                    <li><i class="fa-solid fa-robot text-mti-teal mr-1"></i> Prospección automatizada.</li>
+                                    <li><i class="fa-solid fa-hand-pointer text-mti-teal mr-1"></i> Pausa automática al responder.</li>
+                                    <li><i class="fa-solid fa-user-pen text-mti-teal mr-1"></i> <strong>Seguimiento manual SDR</strong> (FUP, personalización).</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Secuencias</h4>
+                                <ul class="text-sm text-gray-600 space-y-2">
+                                    <li class="flex justify-between">
+                                        <span>Seniority Alto:</span>
+                                        <span class="font-bold">Cortas (3 msj)</span>
+                                    </li>
+                                    <li class="flex justify-between">
+                                        <span>Perfil María:</span>
+                                        <span class="font-bold">Largas (Conversacionales)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- KPI -->
+                        <div class="bg-blue-600 text-white p-4 rounded-lg shadow-md flex items-center justify-between">
+                            <div>
+                                <span class="block text-3xl font-bold">48</span>
+                                <span class="text-xs uppercase opacity-80">IQLs Generados vía LinkedIn</span>
+                            </div>
+                            <i class="fa-solid fa-chart-pie text-4xl opacity-20"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EMAIL CAMPAIGNS -->
+                <div class="lg:col-span-5 flex flex-col gap-6">
+                    
+                    <!-- KLENTY -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-green-50 text-green-600 rounded-full flex items-center justify-center">
+                                    <i class="fa-regular fa-envelope"></i>
+                                </div>
+                                <h3 class="text-md font-bold text-mti-dark">Email (Klenty)</h3>
+                            </div>
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold">1 IQL</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3 text-sm border-l-2 border-green-200 pl-3">
+                                <span class="font-bold text-gray-500 w-16 flex-shrink-0">Ago-Sep</span>
+                                <span class="text-gray-600">General, Compras, TI (3 toques c/u)</span>
+                            </div>
+                            <div class="flex items-start gap-3 text-sm border-l-2 border-green-200 pl-3">
+                                <span class="font-bold text-gray-500 w-16 flex-shrink-0">Nov-Dic</span>
+                                <span class="text-gray-600">Campaña General 2 (3 toques)</span>
+                            </div>
+                            <div class="bg-green-50 p-2 rounded text-center text-xs text-green-800 font-medium mt-2">
+                                <i class="fa-solid fa-share-from-square mr-1"></i> 88 leads derivados a seguimiento
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ENVÍALO SIMPLE -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-8 h-8 bg-orange-50 text-mti-orange rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-image"></i>
+                            </div>
+                            <h3 class="text-md font-bold text-mti-dark">Email Visual</h3>
+                        </div>
+                        <div class="flex justify-between items-end mb-4">
+                            <div class="text-center">
+                                <span class="block text-xl font-bold text-gray-700">21%</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Apertura</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-xl font-bold text-gray-700">9%</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Click</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="block text-xl font-bold text-mti-orange">100</span>
+                                <span class="text-[10px] text-gray-400 uppercase">Correo Compartido</span>
+                            </div>
+                        </div>
+                        <div class="bg-orange-50 p-2 rounded text-center text-xs text-orange-800 font-medium">
+                            <i class="fa-solid fa-share-from-square mr-1"></i> 100 leads derivados a seguimiento
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- BLOQUE 3: MATERIAL EDUCATIVO (EBOOKS) -->
+            <div class="mb-12">
+                <h3 class="text-lg font-bold text-mti-dark mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-mti-teal"></i> Material Educativo Compartido
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- Ebook 1 -->
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex gap-4 hover:shadow-md transition-shadow">
+                        <div class="w-16 h-20 bg-gray-100 rounded flex items-center justify-center text-red-500 text-2xl flex-shrink-0">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-mti-teal bg-teal-50 px-2 py-0.5 rounded mb-1 inline-block">IMPRESIÓN</span>
+                            <h4 class="text-sm font-bold text-gray-700 leading-tight">Tu proveedor de impresión se ajustó a las necesidades de tu empresa, ¿o fue al revés?</h4>
+                        </div>
+                    </div>
+
+                    <!-- Ebook 2 -->
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex gap-4 hover:shadow-md transition-shadow">
+                        <div class="w-16 h-20 bg-gray-100 rounded flex items-center justify-center text-red-500 text-2xl flex-shrink-0">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-mti-teal bg-teal-50 px-2 py-0.5 rounded mb-1 inline-block">SEGURIDAD</span>
+                            <h4 class="text-sm font-bold text-gray-700 leading-tight">¿Tu sistema de impresión descuida la información sensible de tu organización?</h4>
+                        </div>
+                    </div>
+
+                    <!-- Ebook 3 -->
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex gap-4 hover:shadow-md transition-shadow">
+                        <div class="w-16 h-20 bg-gray-100 rounded flex items-center justify-center text-red-500 text-2xl flex-shrink-0">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-mti-orange bg-orange-50 px-2 py-0.5 rounded mb-1 inline-block">RPA</span>
+                            <h4 class="text-sm font-bold text-gray-700 leading-tight break-all">ALLDORA_RPA_una_herramienta_facil_de_implementar_en_tu_empresa</h4>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- BLOQUE 4: LLAMADOS DE APOYO (PIPELINE CLEANUP) -->
+            <div class="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-mti-orange text-white rounded-full flex items-center justify-center shadow-sm">
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-mti-dark">Llamados de Apoyo: Reclasificación</h3>
+                            <p class="text-xs text-gray-500">Limpieza y ordenamiento del Pipeline (Dic-Ene)</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 text-sm">
+                        <div class="bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 text-center">
+                            <span class="block font-bold text-gray-600 text-lg">118</span>
+                            <span class="text-[10px] text-gray-400 uppercase">Base Total</span>
+                        </div>
+                        <div class="bg-mti-teal/10 px-4 py-2 rounded-lg border border-mti-teal/20 text-center">
+                            <span class="block font-bold text-mti-teal text-lg">109</span>
+                            <span class="text-[10px] text-gray-500 uppercase">Llamados</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRÁFICO COMPARATIVO ESTADO (CSS PURE) -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
+                    
+                    <!-- COLUMNA 1: ESTADO PREVIO (LIMBO) -->
+                    <div class="flex flex-col h-full">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase mb-4 text-center">Estado Previo (Limbo)</h4>
+                        <div class="bg-gray-100 rounded-lg p-4 flex-grow flex flex-col justify-center space-y-4 border border-gray-200 relative">
+                            <!-- Label Contexto -->
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gray-200 text-[10px] text-gray-600 px-2 py-0.5 rounded-full font-bold">100% Pendiente</div>
+                            
+                            <div class="bg-white p-3 rounded border-l-4 border-gray-400 shadow-sm">
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-bold text-gray-700">Seguimiento</span>
+                                    <span class="text-sm font-bold text-gray-500">89</span>
+                                </div>
+                                <div class="text-[10px] text-gray-400">Leads sin respuesta reciente</div>
+                            </div>
+                            <div class="bg-white p-3 rounded border-l-4 border-mti-teal shadow-sm">
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-bold text-gray-700">Interesado</span>
+                                    <span class="text-sm font-bold text-mti-teal">28</span>
+                                </div>
+                                <div class="text-[10px] text-gray-400">Leads fríos / estancados</div>
+                            </div>
+                            <div class="bg-white p-3 rounded border-l-4 border-gray-300 shadow-sm opacity-60">
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-bold text-gray-700">Más adelante</span>
+                                    <span class="text-sm font-bold text-gray-500">1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA 2: ACCIÓN (CENTRAL) -->
+                    <div class="flex flex-col items-center justify-center py-4 lg:py-0 relative">
+                        <!-- Flecha Conectora -->
+                        <div class="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-gray-200 -z-10"></div>
+                        <div class="bg-white border-2 border-mti-orange rounded-full w-24 h-24 flex flex-col items-center justify-center z-10 shadow-lg mb-2">
+                            <i class="fa-solid fa-phone-volume text-2xl text-mti-orange mb-1"></i>
+                            <span class="text-xs font-bold text-mti-dark">Ejecución</span>
+                        </div>
+                        <div class="text-center bg-white px-2">
+                            <p class="text-sm font-bold text-gray-800">109 Contactados</p>
+                            <p class="text-[10px] text-gray-500">9 Sin llamar (Buzón/Error)</p>
+                        </div>
+                        <!-- Icono Arrow down mobile -->
+                        <i class="fa-solid fa-arrow-down text-gray-300 text-xl lg:hidden mt-4"></i>
+                    </div>
+
+                    <!-- COLUMNA 3: ESTADO FINAL (ORDENADO) -->
+                    <div class="flex flex-col h-full">
+                        <h4 class="text-xs font-bold text-mti-teal uppercase mb-4 text-center">Estado Final (Accionable)</h4>
+                        <div class="bg-teal-50/50 rounded-lg p-4 flex-grow space-y-3 border border-teal-100">
+                            <!-- Label Contexto -->
+                            <div class="absolute -top-3 right-1/2 lg:right-auto lg:left-1/2 transform translate-x-1/2 lg:-translate-x-1/2 bg-teal-100 text-[10px] text-teal-800 px-2 py-0.5 rounded-full font-bold">Pipeline Ordenado</div>
+
+                            <!-- Desglose de Interesados (Visual destacado) -->
+                            <div class="mb-4 pb-3 border-b border-teal-100">
+                                <p class="text-[10px] uppercase font-bold text-gray-400 mb-2">Reclasificación "Interesados" (28)</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="bg-white p-2 rounded border border-gray-100 text-center">
+                                        <span class="block text-lg font-bold text-mti-teal">15</span>
+                                        <span class="text-[9px] text-gray-500 leading-tight block">Intentar de nuevo</span>
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-gray-100 text-center">
+                                        <span class="block text-lg font-bold text-blue-500">9</span>
+                                        <span class="text-[9px] text-gray-500 leading-tight block">Llamar en Enero</span>
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-gray-100 text-center">
+                                        <span class="block text-lg font-bold text-gray-400">3</span>
+                                        <span class="text-[9px] text-gray-500 leading-tight block">Buzón</span>
+                                    </div>
+                                    <div class="bg-white p-2 rounded border border-gray-100 text-center">
+                                        <span class="block text-lg font-bold text-gray-400">1</span>
+                                        <span class="text-[9px] text-gray-500 leading-tight block">Por llamar</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Resto del Pipeline (Seguimiento 89 + 1) -->
+                            <div>
+                                <p class="text-[10px] uppercase font-bold text-gray-400 mb-2">Limpieza de Base (90)</p>
+                                <div class="space-y-1">
+                                    <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden flex">
+                                        <!-- Simulación visual proporcional basada en 89 leads -->
+                                        <div class="bg-red-400 w-[40%]" title="No Interesado"></div>
+                                        <div class="bg-gray-400 w-[30%]" title="Buzón / No contesta"></div>
+                                        <div class="bg-blue-400 w-[20%]" title="Seguimiento"></div>
+                                        <div class="bg-yellow-400 w-[10%]" title="Llamar luego"></div>
+                                    </div>
+                                    <div class="flex justify-between text-[9px] text-gray-500 px-1">
+                                        <span>No Interesado</span>
+                                        <span>Buzón</span>
+                                        <span>Seguimiento</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- INSIGHT FINAL -->
+            <div class="mt-8 flex flex-col md:flex-row gap-4 items-center bg-blue-50 border border-blue-100 p-4 rounded-lg">
+                <div class="bg-white p-2 rounded-full shadow-sm text-blue-500">
+                    <i class="fa-solid fa-glasses"></i>
+                </div>
+                <div class="text-sm text-blue-800">
+                    <strong>Lectura Ejecutiva:</strong> 
+                    <span class="mx-1">•</span> LinkedIn fue el generador principal.
+                    <span class="mx-1">•</span> El contenido (eBooks) cualificó las conversaciones.
+                    <span class="mx-1">•</span> Los llamados funcionaron para ordenar el pipeline y dejar "la mesa servida" para la gestión comercial.
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 8: 2DA ETAPA (REDSEÑADA - DARK THEME STRATEGY) -->
+        <!-- ========================================== -->
+        <section id="etapa2" class="animate-fade-in scroll-mt-24 bg-slate-900 text-white p-8 md:p-12 rounded-3xl shadow-2xl relative overflow-hidden">
+            
+            <!-- Decoración de fondo -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-mti-teal opacity-10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-mti-orange opacity-10 rounded-full blur-3xl -ml-32 -mb-32"></div>
+
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 relative z-10">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center text-mti-teal shadow-lg border border-white/10">
+                        <i class="fa-solid fa-chess text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-white tracking-tight">2da Etapa: Estrategia y Potencial</h2>
+                        <p class="text-sm text-gray-400">Hoja de ruta basada en datos y aprendizajes validados</p>
+                    </div>
+                </div>
+                <div class="px-4 py-1.5 rounded-full bg-mti-teal/20 border border-mti-teal/50 text-mti-teal text-xs font-bold uppercase tracking-wider">
+                    Next Level
+                </div>
+            </div>
+
+            <!-- APRENDIZAJES CLAVE (TARJETAS GLASS) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 relative z-10">
+                
+                <!-- 1. Seniority y Perfiles -->
+                <div class="bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10 hover:border-mti-teal/50 transition-colors group">
+                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-user-graduate text-mti-teal group-hover:text-white transition-colors"></i> Seniority y Perfiles
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-300 mb-6">
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-check text-mti-teal mt-1"></i> Perfiles senior generan mejores tasas en menos tiempo.</li>
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-check text-mti-teal mt-1"></i> La autoridad percibida es clave para la conversión.</li>
+                    </ul>
+                    <div class="pt-4 border-t border-white/10">
+                        <p class="text-xs text-mti-teal font-bold uppercase mb-1">Aprendizaje Aplicado</p>
+                        <p class="text-sm text-white">Iniciar con <strong class="text-white border-b border-mti-teal">2 perfiles activos simultáneos</strong> desde el día 1, alineados a cada servicio, para acelerar volumen sin perder calidad.</p>
+                    </div>
+                </div>
+
+                <!-- 2. Continuidad y Foco -->
+                <div class="bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10 hover:border-mti-teal/50 transition-colors group">
+                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-spin text-mti-teal group-hover:text-white transition-colors"></i> Continuidad y Foco
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-300 mb-6">
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-check text-mti-teal mt-1"></i> La continuidad del perfil es vital para sostener resultados.</li>
+                        <li class="flex items-start gap-3"><i class="fa-solid fa-check text-mti-teal mt-1"></i> En la Etapa 2, el foco pasa de "testear" a <strong>optimizar</strong>.</li>
+                    </ul>
+                    <div class="pt-4 border-t border-white/10">
+                        <p class="text-xs text-mti-teal font-bold uppercase mb-1">Aplicación Directa</p>
+                        <p class="text-sm text-white">Mantener la continuidad de María e incorporar un segundo perfil dedicado para evitar interrupciones operativas.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- NUEVO BLOQUE: EVOLUCIÓN DEL ICP (HIGHLIGHT) -->
+            <div class="bg-gradient-to-r from-gray-800 to-slate-800 rounded-2xl p-8 mb-12 border border-white/10 relative overflow-hidden shadow-2xl">
+                <!-- Conector Visual de fondo -->
+                <div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-arrow-right-long text-9xl text-white"></i>
+                </div>
+
+                <div class="relative z-10 text-center mb-8">
+                    <h3 class="text-xl font-bold text-white mb-1">Evolución del ICP</h3>
+                    <p class="text-sm text-mti-teal font-medium uppercase tracking-widest">Optimización, no Redefinición</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10 items-center">
+                    <!-- Izquierda: Validación -->
+                    <div class="text-right border-r border-white/10 pr-8">
+                        <div class="inline-flex items-center gap-2 bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-bold uppercase mb-3">
+                            <i class="fa-solid fa-check-circle"></i> Validado
+                        </div>
+                        <h4 class="text-lg font-bold text-white mb-2">ICP Original Correcto</h4>
+                        <p class="text-sm text-gray-400 leading-relaxed">
+                            Los IQLs generados se alinearon exitosamente con los perfiles, industrias y roles definidos inicialmente. El target es el adecuado.
+                        </p>
+                    </div>
+
+                    <!-- Derecha: Optimización -->
+                    <div class="text-left pl-4">
+                        <div class="inline-flex items-center gap-2 bg-mti-orange/20 text-mti-orange px-3 py-1 rounded-full text-xs font-bold uppercase mb-3">
+                            <i class="fa-solid fa-chart-line"></i> Next Step
+                        </div>
+                        <h4 class="text-lg font-bold text-white mb-2">Optimización Táctica</h4>
+                        <ul class="text-sm text-gray-400 space-y-1">
+                            <li><i class="fa-solid fa-caret-right text-mti-orange mr-1"></i> Enfoque en industrias con mayor respuesta.</li>
+                            <li><i class="fa-solid fa-caret-right text-mti-orange mr-1"></i> Mensajes específicos por vertical.</li>
+                            <li><i class="fa-solid fa-caret-right text-mti-orange mr-1"></i> Priorización de sectores con tracción.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-white/5 text-center">
+                    <span class="text-xs text-gray-500 uppercase font-bold tracking-wide">Habilitado por:</span>
+                    <span class="ml-2 text-sm text-white font-medium">Base de Datos Construida <span class="text-gray-600 mx-2">+</span> Historial de Interacción <span class="text-gray-600 mx-2">=</span> <span class="text-mti-teal">Madurez del Modelo</span></span>
+                </div>
+            </div>
+
+            <!-- SEGMENTACIÓN POR INDUSTRIA (NUEVO BLOQUE) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12 relative z-10">
+                <!-- Gráfico / Lista -->
+                <div class="bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10">
+                    <h4 class="text-white font-bold mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-bar text-mti-teal"></i> Desglose de IQLs por Industria
+                    </h4>
+                    <div class="space-y-4">
+                        <!-- Manufactura -->
+                        <div>
+                            <div class="flex justify-between text-xs text-gray-300 mb-1">
+                                <span>Manufactura</span>
+                                <span class="font-bold text-white">26</span>
+                            </div>
+                            <div class="w-full bg-gray-700 h-2 rounded-full">
+                                <div class="bg-mti-teal h-2 rounded-full" style="width: 53%"></div>
+                            </div>
+                        </div>
+                        <!-- Finanzas -->
+                        <div>
+                            <div class="flex justify-between text-xs text-gray-300 mb-1">
+                                <span>Finanzas y Seguros</span>
+                                <span class="font-bold text-white">9</span>
+                            </div>
+                            <div class="w-full bg-gray-700 h-2 rounded-full">
+                                <div class="bg-blue-400 h-2 rounded-full" style="width: 18%"></div>
+                            </div>
+                        </div>
+                        <!-- Educación -->
+                        <div>
+                            <div class="flex justify-between text-xs text-gray-300 mb-1">
+                                <span>Educación Superior</span>
+                                <span class="font-bold text-white">5</span>
+                            </div>
+                            <div class="w-full bg-gray-700 h-2 rounded-full">
+                                <div class="bg-purple-400 h-2 rounded-full" style="width: 10%"></div>
+                            </div>
+                        </div>
+                         <!-- Logística -->
+                         <div>
+                            <div class="flex justify-between text-xs text-gray-300 mb-1">
+                                <span>Logística</span>
+                                <span class="font-bold text-white">4</span>
+                            </div>
+                            <div class="w-full bg-gray-700 h-2 rounded-full">
+                                <div class="bg-yellow-400 h-2 rounded-full" style="width: 8%"></div>
+                            </div>
+                        </div>
+                         <!-- Otros (Agrupados visualmente o listados) -->
+                         <div class="grid grid-cols-3 gap-2 pt-2">
+                             <div class="bg-white/5 p-2 rounded text-center">
+                                 <span class="block text-white font-bold text-sm">2</span>
+                                 <span class="text-[10px] text-gray-400">Salud</span>
+                             </div>
+                             <div class="bg-white/5 p-2 rounded text-center">
+                                 <span class="block text-white font-bold text-sm">2</span>
+                                 <span class="text-[10px] text-gray-400">Retail</span>
+                             </div>
+                             <div class="bg-white/5 p-2 rounded text-center">
+                                 <span class="block text-white font-bold text-sm">1</span>
+                                 <span class="text-[10px] text-gray-400">Serv. Prof.</span>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Contexto Estratégico -->
+                <div class="flex flex-col justify-center">
+                    <h3 class="text-xl font-bold text-white mb-4">Segmentación basada en Resultados</h3>
+                    <p class="text-sm text-gray-300 leading-relaxed mb-6">
+                        La segmentación no es una hipótesis, surge de la tracción real demostrada en la Etapa 1. <strong class="text-white">Manufactura</strong> lidera la generación de interés, seguida por servicios financieros y educación.
+                    </p>
+                    
+                    <div class="bg-mti-teal/10 border-l-4 border-mti-teal p-4 rounded-r-lg mb-4">
+                        <h5 class="text-mti-teal font-bold text-xs uppercase mb-1">Estrategia Etapa 2</h5>
+                        <ul class="text-sm text-gray-300 space-y-2">
+                            <li class="flex items-start gap-2"><i class="fa-solid fa-check mt-1 text-mti-teal"></i> El ICP original se mantiene (es correcto).</li>
+                            <li class="flex items-start gap-2"><i class="fa-solid fa-check mt-1 text-mti-teal"></i> La optimización es <strong>priorizar industrias</strong> con tracción probada.</li>
+                            <li class="flex items-start gap-2"><i class="fa-solid fa-check mt-1 text-mti-teal"></i> Mensajes y materiales específicos por vertical ("Verticalización").</li>
+                        </ul>
+                    </div>
+                    <p class="text-xs text-gray-500 italic">
+                        "Evolución natural del proyecto: pasar de mensajes generalistas a conversaciones de nicho."
+                    </p>
+                </div>
+            </div>
+
+            <!-- ESTRATEGIA DE SERVICIOS -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12 relative z-10">
+                
+                <!-- IMPRESIÓN -->
+                <div class="bg-white text-gray-800 p-6 rounded-xl shadow-lg transform hover:-translate-y-1 transition-transform duration-300">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Servicio Core</span>
+                            <h4 class="text-xl font-bold text-mti-teal mt-1">Impresión</h4>
+                        </div>
+                        <div class="bg-teal-50 p-2 rounded-full text-mti-teal"><i class="fa-solid fa-print"></i></div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4 font-medium">Volumen concentrado en este servicio, validado por los resultados operativos del proyecto.</p>
+                    <div class="w-full bg-gray-100 h-1 rounded-full mb-2"><div class="bg-mti-teal h-1 rounded-full" style="width: 100%"></div></div>
+                    <p class="text-[10px] text-gray-400 text-right">Prioridad Alta</p>
+                </div>
+
+                <!-- RPA -->
+                <div class="bg-slate-800 p-6 rounded-xl border border-white/10 hover:bg-slate-750 transition-colors">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Potencial</span>
+                            <h4 class="text-xl font-bold text-white mt-1">RPA</h4>
+                        </div>
+                        <div class="bg-white/10 p-2 rounded-full text-gray-300"><i class="fa-solid fa-robot"></i></div>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">Mostró buena aceptación. Requiere mensajes específicos por proceso para escalar.</p>
+                    <div class="w-full bg-gray-700 h-1 rounded-full mb-2"><div class="bg-mti-orange h-1 rounded-full" style="width: 60%"></div></div>
+                    <p class="text-[10px] text-gray-500 text-right">Escalable</p>
+                </div>
+
+                <!-- ACCIONES TÁCTICAS (NUEVO BLOQUE INTEGRADO) -->
+                <div class="bg-slate-800 p-6 rounded-xl border border-white/10 flex flex-col justify-center gap-4">
+                    <h4 class="text-sm font-bold text-white uppercase mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-yellow-400"></i> Acciones Tácticas
+                    </h4>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="bg-blue-500/20 text-blue-400 p-2 rounded flex-shrink-0"><i class="fa-solid fa-layer-group text-xs"></i></div>
+                        <div>
+                            <p class="text-xs font-bold text-white">Segmentación Industrial</p>
+                            <p class="text-[10px] text-gray-400">Campañas específicas por industria.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="bg-orange-500/20 text-orange-400 p-2 rounded flex-shrink-0"><i class="fa-solid fa-chart-pie text-xs"></i></div>
+                        <div>
+                            <p class="text-xs font-bold text-white">Nurturing Visual</p>
+                            <p class="text-[10px] text-gray-400">Refuerzo medible (clicks, shares) desde el día 1.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- PERFILES: EQUIPO ÉLITE -->
+            <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
+                <i class="fa-solid fa-people-group text-mti-teal"></i> Perfiles Recomendados
+            </h3>
+            <div class="flex flex-col md:flex-row gap-4 mb-12 relative z-10">
+                
+                <!-- Victor (Principal) -->
+                <div class="flex-1 bg-white rounded-lg p-1 flex items-center gap-4 pr-6 overflow-hidden relative group">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-mti-teal"></div>
+                    <div class="w-16 h-16 bg-gray-200 flex-shrink-0 flex items-center justify-center text-[8px] text-gray-500 font-bold uppercase">Victor Foto</div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-sm">Víctor Armando L.</h4>
+                        <p class="text-xs text-mti-teal font-bold uppercase mb-1">Especialista Impresión</p>
+                        <p class="text-[10px] text-gray-500 leading-tight">Ideal para potenciar el servicio core. Trayectoria y foco en eficiencia.</p>
+                    </div>
+                    <div class="absolute top-2 right-2 text-mti-teal opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                </div>
+
+                <!-- Maria (Flexible) -->
+                <div class="flex-1 bg-white/10 backdrop-blur border border-white/10 rounded-lg p-4 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex-shrink-0 flex items-center justify-center text-[8px] text-white font-bold uppercase border border-white/20">Maria Foto</div>
+                    <div>
+                        <h4 class="font-bold text-white text-sm">María Antonieta J.</h4>
+                        <p class="text-xs text-gray-400 font-bold uppercase mb-1">Perfil Flexible</p>
+                        <p class="text-[10px] text-gray-400 leading-tight">Continuidad para crecimiento. Requiere apoyo de contenido alineado al ICP.</p>
+                    </div>
+                </div>
+
+                <!-- Enrique (Refuerzo) -->
+                <div class="flex-1 bg-white/5 border border-white/5 rounded-lg p-4 flex items-center gap-4 opacity-70 hover:opacity-100 transition-opacity">
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex-shrink-0 flex items-center justify-center text-[8px] text-gray-400 font-bold uppercase">Enrique Foto</div>
+                    <div>
+                        <h4 class="font-bold text-gray-300 text-sm">Enrique Figueroa</h4>
+                        <p class="text-xs text-mti-orange font-bold uppercase mb-1">Refuerzo RPA</p>
+                        <p class="text-[10px] text-gray-500 leading-tight">Opción estratégica si se decide sumar RPA activamente.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- CIERRE ESTRATÉGICO -->
+            <div class="text-center relative z-10 border-t border-white/10 pt-8">
+                <p class="text-lg text-white font-light italic mb-2">"La segunda etapa no empieza de cero. Empieza desde lo aprendido."</p>
+                <div class="flex justify-center gap-4 text-xs text-gray-500 uppercase tracking-widest mt-4">
+                    <span><i class="fa-solid fa-check text-mti-teal mr-1"></i> Escalar</span>
+                    <span><i class="fa-solid fa-check text-mti-teal mr-1"></i> Priorizar</span>
+                    <span><i class="fa-solid fa-check text-mti-teal mr-1"></i> Impactar</span>
+                </div>
+            </div>
+
+             <!-- CIERRE EJECUTIVO (Conclusión Ejecutiva) -->
+            <div class="bg-gradient-to-r from-mti-dark to-slate-900 rounded-lg p-6 text-center text-white shadow-lg mt-8 border border-white/10 relative z-10">
+                <i class="fa-solid fa-flag-checkered text-4xl text-mti-orange mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">Conclusión Ejecutiva</h3>
+                <p class="text-gray-300 text-sm max-w-2xl mx-auto leading-relaxed">
+                    La primera etapa validó ICP, canales, mensajes y perfiles. La segunda etapa permite <strong>escalar, priorizar y aumentar el impacto</strong>.
+                </p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-mti-dark text-white py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-400 text-sm mb-2">Informe Ejecutivo Confidencial</p>
+            <p class="font-semibold tracking-wide">MTI Selling & Alldora</p>
+        </div>
+    </footer>
+
+    <!-- SCRIPT SCROLLSPY (Control de Menú Activo) Y DOWNLOAD FIX -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- SCROLLSPY LOGIC ---
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '-100px 0px -20% 0px', 
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                        });
+
+                        const activeLink = document.querySelector(`.nav-link[href="#${id}"]`);
+                        if (activeLink) {
+                            activeLink.classList.add('active');
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // --- DOWNLOAD BUTTON LOGIC (FIX) ---
+            const downloadBtn = document.getElementById('download-btn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // Intentar abrir el diálogo de impresión
+                    try {
+                        window.print();
+                    } catch (err) {
+                        console.error("Error al intentar imprimir:", err);
+                        alert("La función de impresión automática está bloqueada. Por favor, usa Ctrl+P (o Cmd+P) para guardar como PDF.");
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
