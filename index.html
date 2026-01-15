@@ -171,6 +171,7 @@
                         <a href="#perfiles" class="nav-link">Perfiles</a>
                         <a href="#timeline" class="nav-link">Timeline</a>
                         <a href="#campanas" class="nav-link">Campañas</a>
+                        <!-- Eliminado Detalles Lead -->
                         <a href="#etapa2" class="nav-link">2da Etapa</a>
                     </nav>
 
@@ -189,44 +190,47 @@
     </header>
 
     <!-- HERO / LOGOS -->
-    <div class="pt-28 pb-6 bg-slate-50">
+    <div class="pt-28 pb-2 bg-slate-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            <!-- BARRA DE LOGOS (FONDO NEGRO) -->
-            <div class="bg-slate-900 rounded-xl p-6 shadow-lg mb-8">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12">
+            <!-- BARRA DE LOGOS Y TÍTULO INTEGRADO (FONDO NEGRO) -->
+            <div class="bg-slate-900 rounded-xl p-6 shadow-lg mb-6">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
                     
                     <!-- Logo MTI -->
-                    <div class="w-48 h-16 flex items-center justify-center">
+                    <div class="w-48 h-16 flex items-center justify-center flex-shrink-0">
+                        <!-- Ruta configurada según solicitud -->
                         <img src="mti-logo.png" alt="MTI Selling" class="max-h-full max-w-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                        <!-- Fallback visual por si la imagen no carga aun -->
                         <span class="hidden text-gray-500 text-xs">[mti-logo.png]</span>
                     </div>
 
-                    <!-- Línea conectora visual (Ajustada a oscuro) -->
-                    <div class="hidden md:block h-px flex-grow bg-gray-700 mx-4"></div>
+                    <!-- TÍTULO INTEGRADO (CENTRO) -->
+                    <div class="text-center flex-grow mx-4 border-t border-gray-700 pt-4 md:border-t-0 md:pt-0 w-full md:w-auto">
+                        <h2 class="text-lg md:text-2xl font-light text-white tracking-wide">Presentación de Resultados y Próximos Pasos</h2>
+                        <div class="mt-2 w-12 h-1 bg-mti-orange mx-auto rounded-full"></div>
+                    </div>
 
                     <!-- Logo Alldora -->
-                    <div class="w-48 h-16 flex items-center justify-center">
+                    <div class="w-48 h-16 flex items-center justify-center flex-shrink-0">
+                        <!-- Ruta configurada según solicitud (con espacio) -->
                         <img src="Logo Alldora.png" alt="Alldora" class="max-h-full max-w-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                        <!-- Fallback visual por si la imagen no carga aun -->
                         <span class="hidden text-gray-500 text-xs">[Logo Alldora.png]</span>
                     </div>
 
                 </div>
             </div>
             
-            <div class="text-center">
-                <h2 class="text-2xl md:text-3xl font-light text-mti-dark">Presentación de Resultados y Próximos Pasos</h2>
-                <div class="mt-3 w-12 h-1 bg-mti-orange mx-auto rounded-full"></div>
-            </div>
+            <!-- Bloque de título anterior eliminado para ahorrar espacio -->
+
         </div>
     </div>
 
     <!-- MAIN CONTENT CONTAINER -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-16">
 
-        <!-- ========================================== -->
         <!-- SECCIÓN 1: OBJETIVO Y ALCANCE -->
-        <!-- ========================================== -->
         <section id="objetivo" class="animate-fade-in bg-white rounded-3xl shadow-lg border border-gray-100 p-6 md:p-10 relative overflow-hidden">
             
             <!-- Acento visual superior -->
@@ -626,9 +630,7 @@
 
         </section>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN 2: ICP (ACORDEONES) -->
-        <!-- ========================================== -->
+        <!-- SECCIÓN 2: ICP -->
         <section id="icp" class="animate-fade-in scroll-mt-24">
             
             <div class="flex items-center gap-3 mb-8">
@@ -976,9 +978,7 @@
 
         </section>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN 3: PERFILES UTILIZADOS (COMPLETA) -->
-        <!-- ========================================== -->
+        <!-- SECCIÓN 3: PERFILES UTILIZADOS -->
         <section id="perfiles" class="animate-fade-in scroll-mt-24">
             
             <div class="flex items-center gap-3 mb-8">
@@ -1033,7 +1033,8 @@
                     <div class="md:w-1/3 bg-gray-50 p-6 flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-gray-200">
                         <div class="w-24 h-24 bg-gray-200 rounded-full mb-4 flex items-center justify-center text-gray-400 text-xs font-bold border-4 border-white shadow-sm overflow-hidden">
                             <!-- Placeholder Image -->
-                            <div class="bg-gray-300 w-full h-full flex items-center justify-center">Juan foto</div>
+                            <img src="Juan foto.jpeg" alt="Juan" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                            <div class="hidden bg-gray-300 w-full h-full flex items-center justify-center">Juan foto</div>
                         </div>
                         <h3 class="text-lg font-bold text-mti-dark">JUAN</h3>
                         <p class="text-sm text-mti-teal font-medium mb-2">Sales Manager / Transf. Digital</p>
@@ -1107,7 +1108,8 @@
                     <!-- Left -->
                     <div class="md:w-1/3 bg-gray-50 p-6 flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-gray-200">
                         <div class="w-24 h-24 bg-gray-200 rounded-full mb-4 flex items-center justify-center text-gray-400 text-xs font-bold border-4 border-white shadow-sm overflow-hidden">
-                            <div class="bg-gray-300 w-full h-full flex items-center justify-center">Maria foto</div>
+                             <img src="Maria Foto.jpeg" alt="Maria" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                            <div class="hidden bg-gray-300 w-full h-full flex items-center justify-center">Maria foto</div>
                         </div>
                         <h3 class="text-lg font-bold text-mti-dark">MARÍA</h3>
                         <p class="text-sm text-mti-teal font-medium mb-2">Inside Sales</p>
@@ -1178,7 +1180,8 @@
                     <!-- Left -->
                     <div class="md:w-1/3 bg-gray-50 p-6 flex flex-col items-center justify-center text-center border-b md:border-b-0 md:border-r border-gray-200">
                         <div class="w-24 h-24 bg-gray-200 rounded-full mb-4 flex items-center justify-center text-gray-400 text-xs font-bold border-4 border-white shadow-sm overflow-hidden">
-                            <div class="bg-gray-300 w-full h-full flex items-center justify-center">Alejandro foto</div>
+                             <img src="Alejandro foto.jpeg" alt="Alejandro" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                            <div class="hidden bg-gray-300 w-full h-full flex items-center justify-center">Alejandro foto</div>
                         </div>
                         <h3 class="text-lg font-bold text-mti-dark">ALEJANDRO</h3>
                         <p class="text-sm text-mti-teal font-medium mb-2">Sales Director</p>
@@ -1322,9 +1325,7 @@
 
         </section>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN 5: TIMELINE (COMPLETA) -->
-        <!-- ========================================== -->
+        <!-- SECCIÓN 5: TIMELINE -->
         <section id="timeline" class="animate-fade-in scroll-mt-24">
             
             <div class="flex items-center gap-3 mb-10">
@@ -1585,9 +1586,7 @@
 
         </section>
 
-        <!-- ========================================== -->
-        <!-- SECCIÓN 6: CAMPAÑAS (COMPLETA) -->
-        <!-- ========================================== -->
+        <!-- SECCIÓN 6: CAMPAÑAS -->
         <section id="campanas" class="animate-fade-in scroll-mt-24">
             
             <div class="flex items-center gap-3 mb-10">
@@ -2195,7 +2194,10 @@
                 <!-- Victor (Principal) -->
                 <div class="flex-1 bg-white rounded-lg p-1 flex items-center gap-4 pr-6 overflow-hidden relative group">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-mti-teal"></div>
-                    <div class="w-16 h-16 bg-gray-200 flex-shrink-0 flex items-center justify-center text-[8px] text-gray-500 font-bold uppercase">Victor Foto</div>
+                    <div class="w-16 h-16 bg-gray-200 flex-shrink-0 flex items-center justify-center text-[8px] text-gray-500 font-bold uppercase">
+                        <img src="Victor foto.jpeg" alt="Victor" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                        <div class="hidden bg-gray-300 w-full h-full flex items-center justify-center">Victor Foto</div>
+                    </div>
                     <div>
                         <h4 class="font-bold text-gray-800 text-sm">Víctor Armando L.</h4>
                         <p class="text-xs text-mti-teal font-bold uppercase mb-1">Especialista Impresión</p>
@@ -2208,7 +2210,10 @@
 
                 <!-- Maria (Flexible) -->
                 <div class="flex-1 bg-white/10 backdrop-blur border border-white/10 rounded-lg p-4 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex-shrink-0 flex items-center justify-center text-[8px] text-white font-bold uppercase border border-white/20">Maria Foto</div>
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex-shrink-0 flex items-center justify-center text-[8px] text-white font-bold uppercase border border-white/20">
+                         <img src="Maria Foto.jpeg" alt="Maria" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                         <div class="hidden bg-gray-300 w-full h-full flex items-center justify-center">Maria Foto</div>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white text-sm">María Antonieta J.</h4>
                         <p class="text-xs text-gray-400 font-bold uppercase mb-1">Perfil Flexible</p>
@@ -2218,7 +2223,10 @@
 
                 <!-- Enrique (Refuerzo) -->
                 <div class="flex-1 bg-white/5 border border-white/5 rounded-lg p-4 flex items-center gap-4 opacity-70 hover:opacity-100 transition-opacity">
-                    <div class="w-12 h-12 bg-white/10 rounded-full flex-shrink-0 flex items-center justify-center text-[8px] text-gray-400 font-bold uppercase">Enrique Foto</div>
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex-shrink-0 flex items-center justify-center text-[8px] text-gray-400 font-bold uppercase">
+                        <img src="Enrique foto.jpeg" alt="Enrique" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                        <div class="hidden bg-gray-300 w-full h-full flex items-center justify-center">Enrique Foto</div>
+                    </div>
                     <div>
                         <h4 class="font-bold text-gray-300 text-sm">Enrique Figueroa</h4>
                         <p class="text-xs text-mti-orange font-bold uppercase mb-1">Refuerzo RPA</p>
